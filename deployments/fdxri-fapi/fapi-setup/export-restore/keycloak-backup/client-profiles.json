@@ -1,0 +1,42 @@
+{
+  "profiles": [
+    {
+      "name": "fapi-2-public-profile",
+      "description": "FAPI 2.0 for Public Clients (no client auth)",
+      "executors": [
+        {
+          "executor": "pkce-enforcer",
+          "configuration": {
+            "auto-configure": true,
+            "augment": false
+          }
+        },
+        {
+          "executor": "secure-signature-algorithm",
+          "configuration": {
+            "default-algorithm": "ES256",
+            "allowed-algorithm": [
+              "ES256",
+              "ES384",
+              "ES512",
+              "PS256",
+              "PS384",
+              "PS512"
+            ]
+          }
+        },
+        {
+          "executor": "dpop-bind-enforcer",
+          "configuration": {
+            "token-type": "dpop",
+            "auto-configure": "true"
+          }
+        },
+        {
+          "executor": "consent-required",
+          "configuration": {}
+        }
+      ]
+    }
+  ]
+}

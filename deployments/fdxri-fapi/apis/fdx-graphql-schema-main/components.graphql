@@ -1,0 +1,1242 @@
+type Query {
+    fdxVersion: FdxVersion!
+}
+
+type FdxVersion {
+    major: Int!
+    minor: Int!
+    patch: Int!
+}
+
+type Mutation {
+    _: ID
+}
+
+input Pagination {
+    limit: Int
+    offset: String @deprecated(reason: "Use pageKey")
+    pageKey: String
+}
+"""
+Provider to define the date ranges and behaviors they will support.
+Example of defined behavior:
+ - Recipients need to either specify both start date and end date or neither. If both
+    start date and end date are not specified; default provided. Default range: 7 Days
+    of past data. (Today’s date - 6 days both dates are inclusive).
+ - Recipient can specify the same start date and end date. The returned data will reflect
+    transactions from that date.
+ - If start date and end date both are specified and if start date is later than end date,
+    return ‘invalid date range’ error.
+ - If start Date and end date both are specified and if start date is older than what the
+    Data Provider supports, then the Data Provider should return ‘invalid date range’
+    error. Example: If today is 5/14/2024 and the
+    DP supports 24 months, the start date should be 5/14/2022 and newer; it should not be
+    5/13/2022 or older.
+ - If start date is specified but end date is not specified or vice versa; Data Provider
+    should return ‘invalid date range’ error.
+"""
+input DatePagination {
+    startTime: Date @deprecated(reason: "Use startDate")
+    "Start date for use in retrieval of elements"
+
+    startDate: Date
+
+    endTime: Date @deprecated(reason: "Use endDate")
+
+    "End date for use in retrieval of elements"
+    endDate: Date
+}
+
+# Extended scalar definitions https://github.com/graphql-java/graphql-java-extended-scalars/blob/master/README.md
+scalar DateTime @specifiedBy(url: "https://tools.ietf.org/html/rfc3339")
+scalar Date @specifiedBy(url: "https://tools.ietf.org/html/rfc3339")
+scalar CountryCode @specifiedBy(url: "https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2")
+scalar CurrencyCode @specifiedBy(url: "https://en.wikipedia.org/wiki/ISO_4217")
+scalar URI @specifiedBy(url: "https://tools.ietf.org/html/rfc3986")
+scalar Region @specifiedBy(url: "https://www.upu.int/en/Postal-Solutions/Programmes-Services/Addressing-Solutions")
+scalar PostalCode @specifiedBy(url: "https://www.upu.int/en/Postal-Solutions/Programmes-Services/Addressing-Solutions")
+
+directive @length(min: Int, max: Int) on FIELD_DEFINITION|INPUT_FIELD_DEFINITION
+directive @bounds(min: Float, max: Float) on FIELD_DEFINITION|INPUT_FIELD_DEFINITION
+
+### Enums
+"Types of relationships between accounts and holders. Suggested values"
+enum AccountHolderRelationship {
+    """
+    An individual who has been given permission by the account owner/holder to
+    sign checks, make withdrawals, and conduct transactions on behalf of an
+    account holder for deposit account types, such as checking or savings, but
+    does not own the account. They may also have an ability to make changes to
+    the account (e.g., can close account)
+    """
+    AUTHORIZED_SIGNER
+    """
+    An individual added to a credit card account by the primary account holder,
+    who has been authorized to make purchases using the card, but has no legal
+    responsibility to repay the debt. The primary account holder remains legally
+    responsible for repaying the debt for all charges incurred, including those
+    of the Authorized User. Authorized User may not have access to the full
+    account control (e.g., cannot close account)
+    """
+    AUTHORIZED_USER
+    BUSINESS
+    FOR_BENEFIT_OF
+    FOR_BENEFIT_OF_PRIMARY
+    FOR_BENEFIT_OF_PRIMARY_JOINT_RESTRICTED
+    FOR_BENEFIT_OF_SECONDARY
+    FOR_BENEFIT_OF_SECONDARY_JOINT_RESTRICTED
+    FOR_BENEFIT_OF_SOLE_OWNER_RESTRICTED
+    POWER_OF_ATTORNEY
+    PRIMARY
+    PRIMARY_BORROWER
+    PRIMARY_JOINT
+    PRIMARY_JOINT_TENANTS
+    SECONDARY
+    SECONDARY_BORROWER
+    SECONDARY_JOINT
+    SECONDARY_JOINT_TENANTS
+    SOLE_OWNER
+    TRUSTEE
+    UNIFORM_TRANSFER_TO_MINOR
+}
+
+enum AccountType {
+    "An employer-sponsored money-purchase retirement plan that allows dollar or percentage-based contributions from the employer, the employee, or both"
+    _401A
+
+    "An employer-sponsored defined-contribution pension account defined in subsection 401(k) of the Internal Revenue Code"
+    _401K
+
+    "A U.S. tax-advantaged retirement savings plan available for public education organizations, some non-profit employers (only Internal Revenue Code 501(c)(3) organizations), cooperative hospital service organizations, and self-employed ministers in the United States"
+    _403B
+
+    "A tax-advantaged savings plan designed to help pay for education"
+    _529
+
+    "A form of insurance or investment entitling the investor to a series of annual sums"
+    ANNUITY
+
+    "A type of loan used to finance a car purchase"
+    AUTOLOAN
+
+    "Investment management offered by a licensed brokerage firm that places trades on behalf of the customer, utilizing any number of investment options"
+    BROKERAGEPRODUCT
+
+    "A certificate of deposit (CD) is a product offered by banks and credit unions that provides an interest rate premium in exchange for the customer agreeing to leave a lump-sum deposit untouched for a predetermined period of time"
+    CD
+
+    "An account to which goods and services may be charged on credit"
+    CHARGE
+
+    "A deposit account held at a financial institution that allows withdrawals and deposits"
+    CHECKING
+
+    "Deposit Account for Commercial Customers e.g. Business Trust Account"
+    COMMERCIALDEPOSIT
+
+    "Investment Account for Commercial Customers. e.g. Commercial Brokerage Account"
+    COMMERCIALINVESTMENT
+
+    "A preset borrowing limit that can be used at any time"
+    COMMERCIALINEOFCREDIT
+
+    "A preset borrowing limit that can be used at any time"
+    COMMERCIALLOAN
+
+    "A trust or custodial account set up in the United States solely for paying qualified education expenses for the designated beneficiary of the account"
+    COVERDELL
+
+    "Allows cardholders to borrow funds with which to pay for goods and services with merchants that accept cards for payment"
+    CREDITCARD
+
+    "A deferred profit sharing plan (DPSP) is an employer-sponsored profit sharing plan that is registered with a government agency (such as the Canada Revenue Agency)."
+    DEFERREDPROFITSHARINGPLAN
+
+    "An employer-sponsored retirement plan where employee benefits are computed using a formula that considers several factors, such as length of employment and salary history"
+    DEFINEDBENEFIT
+
+    "Encompasses cryptocurrencies as well as other digital assets such as NFTs."
+    DIGITALASSET
+
+    "A digital wallet account enables digital financial transactions through a deposit value and one or more linked funding instruments"
+    DIGITALWALLET
+
+    "A contractual arrangement in which a third party (the stakeholder or escrow agent) receives and disburses money or property for the primary transacting parties, with the disbursement dependent on conditions agreed to by the transacting parties"
+    ESCROW
+
+    "An employee stock ownership plan (ESOP) is an employee benefit plan that gives workers ownership interest in the company"
+    ESOP
+
+    "A First Home Savings Account (FHSA), registered with the Canadian federal government, which allows first-time home buyers to save to buy or build their first home tax free"
+    FIRSTHOMESAVINGSACCOUNT
+
+    "A type of insurance contract that promises to pay the buyer a specific, guaranteed interest rate on their contributions to the account"
+    FIXEDANNUITY
+
+    "An account of a child in the parent's name, with legal title to the assets in the account, as well as all capital gains and tax liabilities produced from the account belonging to the parent"
+    GUARDIAN
+
+    "A High Interest Savings Account (HISA), is an account type recognized in Canada, which allows individuals to save at a higher interest rate than a standard savings account"
+    HIGHINTERESTSAVINGSACCOUNT
+
+    "A type of loan in which the borrower uses the equity of his or her home as collateral"
+    HOMEEQUITYLOAN
+
+    "A loan in which the lender agrees to lend a maximum amount within an agreed period, where the collateral is the borrower's equity in their house"
+    HOMELINEOFCREDIT
+
+    "An Individual Pension Plan (IPP) is an employer-sponsored, defined benefit pension plan that can be set up by and for a single person."
+    INDIVIDUALPENSIONPLAN
+
+    "A type of agreement or contract involving a loan that is repaid over time with a set number of scheduled payments"
+    INSTALLMENT
+
+    INSTITUTIONALTRUST
+
+    "A standard investment account that is not registered."
+    INVESTMENTACCOUNT
+
+    "An individual retirement account (IRA) is a tax-advantaged account that individuals use to save and invest for retirement"
+    IRA
+
+    "A tax-deferred pension plan available to self-employed individuals or unincorporated businesses for retirement purposes"
+    KEOGH
+
+    "A Life Income Fund (LIF) is a type of registered retirement income fund (RRIF) that can be used to hold locked-in pension funds as well as other assets for an eventual payout as retirement income."
+    LIFEINCOMEFUND
+
+    "A credit facility extended by a bank or other financial institution to a government, business or individual customer that enables the customer to draw on the facility when the customer needs funds"
+    LINEOFCREDIT
+
+    "The lending of money by one or more individuals, organizations, or other entities to other individuals, organizations etc"
+    LOAN
+
+    "A Locked-in Retirement Account (LIRA) is a pension savings account that holds funds that cannot be withdrawn until retirement."
+    LOCKEDINRETIREMENTACCOUNT
+
+    "A Locked-in Retirement Income Fund (LRIF) is a locked-in account which has been created with funds that originated with a registered pension plan (RPP)."
+    LOCKEDINRETIREMENTINCOMEFUND
+
+    "A Locked-in Retirement Savings plan (LRSP) is a pension savings account that holds funds that cannot be withdrawn until retirement (similar to LIRA)"
+    LOCKEDINRETIREMENTSAVINGSPLAN
+
+    "Insurance that replaces a portion of the policyholder's income due to a disability for an extended period of time, usually more than a year"
+    LONGTERMDISABILITY
+
+    MILITARYLOAN
+
+    "A deposit account that pays interest based on current interest rates in the money markets"
+    MONEYMARKET
+
+    "A type of loan you can use to buy or refinance a home"
+    MORTGAGE
+
+    "A type of tax-deferred employer-sponsored retirement plan that falls outside of ERISA guidelines"
+    NONQUALIFEDPLAN
+
+    "Use when none of the listed enums apply"
+    OTHERDEPOSIT
+
+    "Use when none of the listed enums apply"
+    OTHERINVESTMENT
+
+    "A type of debt that is not protected by a guarantor, or collateralized by a lien on specific assets of the borrower"
+    PERSONALLOAN
+
+    "A Pooled Registered Pension Plan (PRPP) is a type of pension plan that is similar to a defined contribution plan; however, employer contributions are not mandatory."
+    POOLEDREGISTEREDPENSIONPLAN
+
+    "An account that is preloaded with funds before first use, such as a gift card"
+    PREPAID
+
+    "A Prescribed Registered Retirement Income Fund (PRRIF) is a personal retirement income fund that is governed by the federal Income Tax Act (Canada)."
+    PRESCRIBEDREGISTEREDRETIREMENTINCOMEFUND
+
+    "A Registered Disability Savings Plan (RDSP) is a savings plan intended to help parents and others save for the long term financial security of a person who is eligible for the disability tax credit (DTC)."
+    REGISTEREDDISABILITYSAVINGSPLAN
+
+    "A Registered Education Savings Plan (RESP) is a special savings account for parents/custodians/others who want to save for their child's education after high school and is registered with the Canadian federal government."
+    REGISTEREDEDUCATIONSAVINGSPLAN
+
+    "A Registered Pension Plan (RPP) is a pension plan that has been set up by an employer, and registered by the Canadian federal government."
+    REGISTEREDPENSIONPLAN
+
+    "A Registered Retirement Income Fund (RRIF) is an arrangement between an individual and a carrier (an insurance company, a trust company or a bank) that is registered with the Canadian federal government."
+    REGISTEREDRETIREMENTINCOMEFUND
+
+    "A Registered Retirement Savings Plan (RRSP) is a savings plan, registered with the Canadian federal government that you can contribute to for retirement purposes."
+    REGISTEREDRETIREMENTSAVINGSPLAN
+
+    "Restricted Life Income Fund (RLIF) is a retirement option that operates like a LIF. The RLIF provides a one-time 50% unlocking option."
+    RESTRICTEDLIFEINCOMEFUND
+
+    "A Restricted Locked-In Savings Plan (RLSP) is an investment account that can only be established as a result of a transfer of funds from an RLIF"
+    RESTRICTEDLOCKEDINSAVINGSPLAN
+
+    ROLLOVER
+
+    "An individual retirement account that offers tax-free growth and tax-free withdrawals in retirement"
+    ROTH
+
+    "A simplified employee pension (SEP) plan set up before 1997 that includes a salary reduction arrangement"
+    SARSEP
+
+    "An interest-bearing deposit account held at a bank or other financial institution"
+    SAVINGS
+
+    SMBLOAN
+
+    "Insurance that replaces a portion of the policyholder's income due to a disability for a short period of time, usually less than a year"
+    SHORTTERMDISABILITY
+
+    "A Specified Pension Plan (SPP) is a pension plan or similar arrangement that has been prescribed under the Income Tax Regulations as a \"specified pension plan\" for purposes of the Income Tax Act."
+    SPECIFIEDPENSIONPLAN
+
+    "A type of loan designed to help students pay for post-secondary education and the associated fees, such as tuition, books and supplies, and living expenses"
+    STUDENTLOAN
+
+    TAXABLE
+
+    "A Tax-Free Savings Account (TFSA) is a way for over the age of 18 to set money aside, tax free, throughout their lifetime."
+    TAXFREESAVINGSACCOUNT
+
+    TDA
+
+    "Life insurance that provides coverage at a fixed rate of payments for a limited period of time"
+    TERM
+
+    "A type of financial account that is opened by an individual and managed by a designated trustee for the benefit of a third party in accordance with agreed-upon terms"
+    TRUST
+
+    UGMA
+
+    "A type of a cash value life insurance where the excess of premium payments above the current cost of insurance is credited to the cash value of the policy, which in turn is credited each month with interest"
+    UNIVERSALLIFE
+
+    UTMA
+
+    "A type of insurance contract that promises to pay back the buyer based on the performance of an underlying portfolio of mutual funds selected by the buyer"
+    VARIABLEANNUITY
+
+    "Life insurance which is guaranteed to remain in force for the insured's entire lifetime, provided required premiums are paid, or to the maturity date"
+    WHOLELIFE
+}
+"""
+Indicates whether a customer is present and has requested the operation (USER),
+or if a batch job has requested the operation (BATCH)
+"""
+enum ActorType {
+    BATCH
+    USER
+}
+
+"Indicator if parent entity is a consumer or business"
+enum BusinessOrConsumer {
+    BUSINESS
+    CONSUMER
+}
+
+"Duration of the Consent Grant, per FDX UX Guidelines v1.0 (pp 18 - 20)"
+enum ConsentDurationType {
+    ONE_TIME
+    PERSISTENT
+    TIME_BOUND
+}
+
+enum ContentTypes {
+    APPLICATION_JSON
+    APPLICATION_PDF
+    APPLICATION_ZIP
+    IMAGE_GIF
+    IMAGE_JPEG
+    IMAGE_PNG
+    IMAGE_TIFF
+}
+
+# Omit DateString - use Date (why is this sorted with the enums???)
+
+"The location type of an address"
+enum DeliveryAddressType {
+    BUSINESS
+    DELIVERY
+    HOME
+    MAILING
+}
+
+# Omit FdxVersion - not relevant here
+
+"""
+Represents an authorization claim aligned with FDX Data Cluster.
+`fdx:accountpayments:read` is deprecated and replaced with `fdx:paymentsupport:read`
+in FDX release V6.1.0, `fdx:accountpayments:read` will be removed with V7 release
+"""
+enum FdxOauthScope {
+    FDX_ACCOUNTBASIC_READ
+    FDX_ACCOUNTDETAILED_READ
+    FDX_ACCOUNTPAYMENTS_READ @deprecated
+    FDX_BILLS_READ
+    FDX_CUSTOMERCONTACT_READ
+    FDX_CUSTOMERPERSONAL_READ
+    FDX_IMAGES_READ
+    FDX_INVESTMENTS_READ
+    FDX_NOTIFICATIONS_PUBLISH
+    FDX_NOTIFICATIONS_SUBSCRIBE
+    FDX_PAYMENTSUPPORT_READ
+    FDX_REWARDS_READ
+    FDX_STATEMENTS_READ
+    FDX_TAX_READ
+    FDX_TRANSACTIONS_READ
+}
+
+# Omit HttpAction - Not relevant
+
+# Omit Identifier - just use String
+
+enum IndustryClassificationSystem {
+    "[Bloomberg Classification System](https://www.bloomberg.com/professional/product/reference-data/)"
+    BCLASS
+
+    "[Bloomberg Industry Classification System](https://www.bloomberg.com/professional/product/reference-data/)"
+    BICS
+
+    "[Global Industry Classification System](https://www.msci.com/our-solutions/indexes/gics)"
+    GICS
+
+    "Moody's Industry Classification"
+    MOODYS
+
+    "[North American Industry Classification System](https://www.naics.com)"
+    NAICS
+
+    "Any other set of industry classification codes"
+    OTHER
+
+    "[Standard Industry Classification system](https://www.osha.gov/pls/imis/sicsearch.html)"
+    SIC
+}
+
+# Omit Iso3166CountryCode - see CountryCode
+
+# Omit Iso4217CurrencyCode - see Currency
+
+"""
+FDX API-used OAuth 2.0 Scope values to request Claims as defined by
+[OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims)
+"""
+enum OauthScope {
+    OFFLINE_ACCESS
+    OPENID
+}
+
+"Identifies the type of a party"
+enum PartyType {
+    DATA_ACCESS_PLATFORM
+    DATA_PROVIDER
+    DATA_RECIPIENT
+    INDIVIDUAL
+    MERCHANT
+    VENDOR
+}
+
+"Identifies the type of a Registry"
+enum Registry {
+    FDX
+    GLEIF
+    ICANN
+    PRIVATE
+}
+
+# Omit ResultType (not relevant)
+
+# Omit StateCode (use Region)
+
+# Omit String255 (use String)
+
+# Omit String64 (use String)
+
+"Purpose or type of telephone number"
+enum TelephoneNumberPurpose {
+    BOTH
+    BUSINESS
+    CELL @deprecated(reason: "Replaced by a TelephoneNetwork value")
+    FAX
+    HOME
+    PERSONAL
+}
+
+# Omit Timestamp (use DateTime)
+
+### Schemas
+
+interface IAddress {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+}
+type Address implements IAddress {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+}
+
+"""
+Customers that are commercial in nature are affiliated with a business entity.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+type BusinessCustomer {
+    "Name of business customer"
+    name: String
+
+    "A list of registered agents who act on behalf of the business customer"
+    registeredAgents: [CustomerName!]
+
+    "The registered tax identification number (TIN) or other identifier of business customer"
+    registeredId: String
+
+    "Industry code and type"
+    industryCode: IndustryCode
+
+    "The country and region of the business customer's location"
+    domicile: Domicile
+}
+
+"Name 1, Name 2"
+interface IBusinessName {
+    "Name line 1"
+    name1: String
+
+    "Name line 2"
+    name2: String
+}
+
+"Name 1, Name 2"
+type BusinessName implements IBusinessName {
+    "Name line 1"
+    name1: String
+
+    "Name line 2"
+    name2: String
+}
+
+"Contains all contact details for individual or business"
+interface IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+}
+type Contacts implements IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+}
+
+"Represents a customer"
+interface ICustomer implements IPerson & IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "The person's date of birth"
+    dateOfBirth: Date
+
+    "Country specific Tax Id associated with this customer (SIN or NAS in Canada, SSN or TIN in US, etc.)"
+    taxId: String
+
+    "Country originating the Customer's taxId element"
+    taxIdCountry: CountryCode
+
+    "A federal (such as passport) or state (such as driver's license) issued identifier"
+    governmentId: String
+
+    """
+    Long-term persistent identity of the customer.
+    This identity must be unique to the owning institution
+    """
+    customerId: String
+
+    "Type of entity. One of BUSINESS or CONSUMER"
+    type: BusinessOrConsumer
+
+    "The customer's name"
+    name: CustomerName
+
+    "The business customer information, only used if 'type' is 'BUSINESS'."
+    businessCustomer: BusinessCustomer
+
+    "The customer's start date at the financial institution"
+    customerStartDate: Date
+
+    "The customer's date of last account activity at the financial institution"
+    lastActivityDate: Date
+
+    "List of accounts related to this customer"
+    accounts: CustomerToAccountRelationships
+}
+
+"Represents a customer"
+type Customer implements ICustomer & IPerson & IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "The person's date of birth"
+    dateOfBirth: Date
+
+    "Country specific Tax Id associated with this customer (SIN or NAS in Canada, SSN or TIN in US, etc.)"
+    taxId: String
+
+    "Country originating the Customer's taxId element"
+    taxIdCountry: CountryCode
+
+    "A federal (such as passport) or state (such as driver's license) issued identifier"
+    governmentId: String
+
+    """
+    Long-term persistent identity of the customer.
+    This identity must be unique to the owning institution
+    """
+    customerId: String
+
+    "Type of entity. One of BUSINESS or CONSUMER"
+    type: BusinessOrConsumer
+
+    "The customer's name"
+    name: CustomerName
+
+    "The business customer information, only used if 'type' is 'BUSINESS'."
+    businessCustomer: BusinessCustomer
+
+    "The customer's start date at the financial institution"
+    customerStartDate: Date
+
+    "The customer's date of last account activity at the financial institution"
+    lastActivityDate: Date
+
+    "List of accounts related to this customer"
+    accounts(relationship: [AccountHolderRelationship!]): CustomerToAccountRelationships
+}
+
+"""
+The name of an individual in their role as a customer.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+type CustomerName implements IIndividualName {
+    "First name"
+    first: String
+
+    "Middle initial"
+    middle: String
+
+    "Last name"
+    last: String
+
+    "Generational or academic suffix"
+    suffix: String
+
+    "Name prefix, e.g. Mr."
+    prefix: String
+
+    "Company name"
+    company: String
+}
+"The name of an individual in their role as a customer"
+input CustomerNameInput {
+    "First name"
+    first: String
+
+    "Middle initial"
+    middle: String
+
+    "Last name"
+    last: String
+
+    "Generational or academic suffix"
+    suffix: String
+
+    "Name prefix, e.g. Mr."
+    prefix: String
+
+    "Company name"
+    company: String
+}
+
+"Describes an account related to a customer"
+type CustomerToAccountRelationship {
+    "Related account"
+    # Intentionally nested
+    account: Account
+
+    # Omit links (not relevant)
+
+    "Type of relationship to the account"
+    relationship: AccountHolderRelationship
+}
+"Describes an account related to a customer"
+type CustomerToAccountRelationships implements PaginatedArray {
+    "Related account"
+    # Intentionally nested
+    relationships: [CustomerToAccountRelationship!]
+    page: PageMetadata
+}
+
+type DeliveryAddress implements IAddress {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+
+    "Type of address location. One of BUSINESS, DELIVERY, HOME, MAILING"
+    type: DeliveryAddressType
+
+    "Whether this is the primary and first address to use for contact"
+    primary: Boolean
+}
+input DeliveryAddressInput {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+
+    "Type of address location. One of BUSINESS, DELIVERY, HOME, MAILING"
+    type: DeliveryAddressType
+}
+
+type Domicile {
+    "Country sub-division; state or province or territory"
+    region: Region
+
+    "ISO 3166 Country Code"
+    country: CountryCode
+}
+
+# Omit Error - this schema is built-in to GraphQL; possibly define an enum of ErrorCode?
+
+# Omit FapiInteractionId - this is transport layer
+
+# Omit FiAttribute - this should be done as extends <schema>
+
+# Omit HateoasLink and HateoasLinks (not relevant)
+
+
+"""
+First name, middle initial, last name, suffix fields.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+type IndividualName {
+    "First name"
+    first: String
+
+    "Middle initial"
+    middle: String
+
+    "Last name"
+    last: String
+
+    "Generational or academic suffix"
+    suffix: String
+}
+"""
+First name, middle initial, last name, suffix fields.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+interface IIndividualName {
+    "First name"
+    first: String
+
+    "Middle initial"
+    middle: String
+
+    "Last name"
+    last: String
+
+    "Generational or academic suffix"
+    suffix: String
+}
+
+"Industry code and type"
+type IndustryCode {
+    "Code type"
+    type: IndustryClassificationSystem
+
+    "Code value"
+    code: String
+}
+
+"""
+Data Access Platform, Service Provider, or any other entity in
+the data sharing chain between a Data Provider to a Data Recipient.
+"""
+type Intermediary {
+    "Name of intermediary party"
+    name: String
+
+    "A short description of the intermediary"
+    description: String
+
+    "A URL string of a web page providing information about the intermediary"
+    uri: URI
+
+    "A URL string that references a logo for this intermediary"
+    logoUri: URI
+
+    "Array of strings representing ways to contact people responsible for this intermediary"
+    contacts: [String!]
+
+    "Registry references for this intermediary"
+    registryReferences: [RegistryReference!]
+}
+"""
+Data Access Platform, Service Provider, or any other entity in
+the data sharing chain between a Data Provider to a Data Recipient.
+"""
+input IntermediaryInput {
+    "Name of intermediary party"
+    name: String
+
+    "A short description of the intermediary"
+    description: String
+
+    "A URL string of a web page providing information about the intermediary"
+    uri: URI
+
+    "A URL string that references a logo for this intermediary"
+    logoUri: URI
+
+    "Array of strings representing ways to contact people responsible for this intermediary"
+    contacts: [String!]
+
+    "Registry references for this intermediary"
+    registryReferences: [RegistryReferenceInput!]
+}
+
+"Monetary amount and its currency code"
+interface IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+}
+
+"Monetary amount and its currency code"
+type MonetaryAmount implements IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+}
+
+"Name and Address"
+interface INameAddress implements IAddress & IBusinessName {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+
+    "Name line 1"
+    name1: String
+
+    "Name line 2"
+    name2: String
+}
+
+"Individual or business name with address"
+type NameAddress implements INameAddress & IAddress & IBusinessName {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+
+    "Name line 1"
+    name1: String
+
+    "Name line 2"
+    name2: String
+}
+
+"Contact phone number with name and address"
+type NameAddressPhone implements INameAddress & IAddress & IBusinessName {
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+
+    "Name line 1"
+    name1: String
+
+    "Name line 2"
+    name2: String
+
+    "Phone number"
+    phone: TelephoneNumberPlusExtension
+}
+
+"Offset IDs for paginated result sets"
+type PageMetadata {
+    """
+    Opaque identifier. Does not need to be numeric or have any specific pattern.
+    Deprecated in favor of nextPageKey, will be removed with a future major release
+    """
+    nextOffset: String @deprecated(reason: "Use nextPageKey")
+
+    """
+    Opaque identifier. Does not need to be numeric or have any specific pattern.
+    Implementation specific
+    """
+    nextPageKey: String
+    """
+    Opaque identifier. Does not need to be numeric or have any specific pattern.
+    Deprecated in favor of previousPageKey, will be removed with a future major release
+    """
+    prevOffset: String @deprecated(reason: "Use previousPageKey")
+
+    """
+    Opaque identifier. Does not need to be numeric or have any specific pattern.
+    Implementation specific
+    """
+    previousPageKey: String
+
+    totalElements: Int
+}
+
+# Omit PageMetadataLinks - not relevant
+
+interface PaginatedArray {
+    page: PageMetadata
+}
+
+"FDX Participant - an entity or person that is a part of a FDX API transaction"
+type Party implements IParty {
+    name: String!
+    type: PartyType!
+    homeUri: URI
+    logoUri: URI
+    registry: Registry
+    registeredEntityName: String
+    registeredEntityId: String
+}
+input PartyForCreate {
+    name: String!
+    type: PartyType!
+    homeUri: URI
+    logoUri: URI
+    registry: Registry
+    registeredEntityName: String
+    registeredEntityId: String
+}
+interface IParty {
+    name: String!
+    type: PartyType!
+    homeUri: URI
+    logoUri: URI
+    registry: Registry
+    registeredEntityName: String
+    registeredEntityId: String
+}
+
+type PaymentDetails {
+    principalAmount: Float
+    interestAmount: Float
+    insuranceAmount: Float
+    escrowAmount: Float
+    pmiAmount: Float
+    feesAmount: Float
+}
+
+input PaymentDetailsInput {
+    principalAmount: Float
+    interestAmount: Float
+    insuranceAmount: Float
+    escrowAmount: Float
+    pmiAmount: Float
+    feesAmount: Float
+}
+
+interface IPerson implements IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "The person's date of birth"
+    dateOfBirth: Date
+
+    "Country specific Tax Id associated with this customer (SIN or NAS in Canada, SSN or TIN in US, etc.)"
+    taxId: String
+
+    "Country originating the Customer's taxId element"
+    taxIdCountry: CountryCode
+
+    "A federal (such as passport) or state (such as driver's license) issued identifier"
+    governmentId: String
+}
+
+type Person implements IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "The person's date of birth"
+    dateOfBirth: Date
+
+    "Country specific Tax Id associated with this customer (SIN or NAS in Canada, SSN or TIN in US, etc.)"
+    taxId: String
+
+    "Country originating the Customer's taxId element"
+    taxIdCountry: CountryCode
+
+    "A federal (such as passport) or state (such as driver's license) issued identifier"
+    governmentId: String
+}
+
+input RecipientRequest {
+    clientName: String!
+    description: String
+    redirectUris: [URI!]!
+    logoUri: URI
+    clientUri: URI
+    contacts: [String!]
+    """
+    String containing a space-separated list of scope values.
+    Applicable FDX scopes are defined in OauthScope and FdxOauthScope enumerations.
+    Prior use of DataCluster enumeration for scopes is deprecated with release V6.3
+    """
+    scope: String
+    durationType: [ConsentDurationType!]
+    durationPeriod: Int
+    lookbackPeriod: Int
+    registryReferences: [RegistryReferenceInput!]
+    intermediaries: [IntermediaryInput!]
+}
+interface IRecipientRequest {
+    clientName: String!
+    description: String
+    redirectUris: [URI!]!
+    logoUri: URI
+    clientUri: URI
+    contacts: [String!]
+    scope: String
+    durationType: [ConsentDurationType!]
+    durationPeriod: Int
+    lookbackPeriod: Int
+    registryReferences: [RegistryReference!]
+    intermediaries: [Intermediary!]
+}
+
+type RegistryReference {
+    registeredEntityName: String
+    registeredEntityId: String
+    registry: Registry
+}
+
+input RegistryReferenceInput {
+    registeredEntityName: String
+    registeredEntityId: String
+    registry: Registry
+}
+
+interface ITelephoneNumber {
+    """
+    Purpose of the phone number: HOME, BUSINESS, PERSONAL, FAX, or BOTH.
+    BOTH indicates number is used for both HOME and BUSINESS purposes.
+    `CELL` value is deprecated in v6.3, replaced as a 'network` value
+    """
+    type: TelephoneNumberPurpose
+    """
+    Country calling codes defined by ITU-T recommendations E.123 and E.164,
+    such as '+1' for United States and Canada, see
+    [List_of_country_calling_codes](https://en.wikipedia.org/wiki/List_of_country_calling_codes)
+    """
+    country: String
+    number: String
+    """
+    The network technology used for this telephone.
+    One of CELLULAR, LANDLINE, PAGER, SATELLITE, or VOIP
+    """
+    network: TelephoneNetwork
+    primary: Boolean
+}
+
+enum TelephoneNetwork {
+    CELLULAR
+    LANDLINE
+    PAGER
+    SATELLITE
+    VOIP
+}
+type TelephoneNumber implements ITelephoneNumber {
+    """
+    Purpose of the phone number: HOME, BUSINESS, PERSONAL, FAX, or BOTH.
+    BOTH indicates number is used for both HOME and BUSINESS purposes.
+    `CELL` value is deprecated in v6.3, replaced as a 'network` value
+    """
+    type: TelephoneNumberPurpose
+    country: String
+    number: String
+    """
+    The network technology used for this telephone.
+    One of CELLULAR, LANDLINE, PAGER, SATELLITE, or VOIP
+    """
+    network: TelephoneNetwork
+    primary: Boolean
+}
+input TelephoneNumberInput {
+    """
+    Purpose of the phone number: HOME, BUSINESS, PERSONAL, FAX, or BOTH.
+    BOTH indicates number is used for both HOME and BUSINESS purposes.
+    `CELL` value is deprecated in v6.3, replaced as a 'network` value
+    """
+    type: TelephoneNumberPurpose
+    country: String
+    number: String
+    """
+    The network technology used for this telephone.
+    One of CELLULAR, LANDLINE, PAGER, SATELLITE, or VOIP
+    """
+    network: TelephoneNetwork
+    primary: Boolean
+}
+type TelephoneNumberPlusExtension implements ITelephoneNumber {
+    """
+    Purpose of the phone number: HOME, BUSINESS, PERSONAL, FAX, or BOTH.
+    BOTH indicates number is used for both HOME and BUSINESS purposes.
+    `CELL` value is deprecated in v6.3, replaced as a 'network` value
+    """
+    type: TelephoneNumberPurpose
+    country: String
+    number: String
+    """
+    The network technology used for this telephone.
+    One of CELLULAR, LANDLINE, PAGER, SATELLITE, or VOIP
+    """
+    network: TelephoneNetwork
+    primary: Boolean
+    extension: String
+}

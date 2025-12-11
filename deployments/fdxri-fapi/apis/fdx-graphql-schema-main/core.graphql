@@ -1,0 +1,3312 @@
+### Queries
+extend type Query {
+    searchForAccounts(pagination: Pagination): Accounts!
+
+    getAccount(accountId: ID!): Account
+
+    # Omit getAccountAssetTransferNetworks, getAccountContact, getAccountPaymentNetworks, searchForAccountStatements, searchForAccountTransactions (nested in Account)
+
+    # Omit getAccountStatement, getAccountTransactionImages (can't return image; might replace with external URL)
+
+    searchRewardPrograms(pagination: Pagination): RewardPrograms!
+
+    getRewardProgram(rewardProgramId: ID!): RewardProgram
+
+    # Omit getRewardProgramCategories (nested in RewardProgram)
+}
+
+### Schemas
+interface Account {
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): Transactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type AccountContact implements IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "Owners of the account"
+    holders: [AccountHolder!]
+}
+
+# Omit AccountDescriptor - merged into Account
+
+type AccountHolder implements ICustomer & IPerson & IContacts {
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "The person's date of birth"
+    dateOfBirth: Date
+
+    """
+    Country specific Tax Id associated with this customer.
+    Masked as last four, e.g. xxx-xx-0123, or passed in encrypted payload.
+    (SIN or NAS in Canada, SSN or TIN in US, etc.)
+    """
+    taxId: String
+
+    "Country originating the Customer's taxId element"
+    taxIdCountry: CountryCode
+
+    "A federal (such as passport) or state (such as driver's license) issued identifier"
+    governmentId: String
+
+    """
+    Long-term persistent identity of the customer.
+    This identity must be unique to the owning institution
+    """
+    customerId: String
+
+    "Type of entity. One of BUSINESS or CONSUMER"
+    type: BusinessOrConsumer
+
+    "The customer's name"
+    name: CustomerName
+
+    "The business customer information, only used if 'type' is 'BUSINESS'."
+    businessCustomer: BusinessCustomer
+
+    "The customer's start date at the financial institution"
+    customerStartDate: Date
+
+    "The customer's date of last account activity at the financial institution"
+    lastActivityDate: Date
+
+    "List of accounts related to this customer"
+    accounts: CustomerToAccountRelationships
+}
+
+type AccountPaymentNetwork {
+    """
+    Bank identifier used by the payment network. Typically the 9-digit routing transit number (RTN)
+    associated with the account number at a US institution. FDX v6.3 adds separate bankInstitutionId
+    and bankTransitId properties and deprecates the prior approach to use this field for concatenated
+    Canadian institution IDs
+    """
+    bankId: String
+
+    """
+    The number used to identify the account within the payment network.
+    If identifierType is ACCOUNT_NUMBER, this is the account number;
+    if identifierType is TOKENIZED_ACCOUNT_NUMBER, this is a tokenized account number
+    """
+    identifier: String
+
+    identifierType: PaymentNetworkIdentifierType
+
+    type: PaymentNetworkType
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    supportsRequestForPayment: Boolean
+
+    transferLimits: TransferLimits
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type AccountPaymentNetworkList implements PaginatedArray {
+    page: PageMetadata
+    paymentNetworks: [AccountPaymentNetwork!]
+}
+
+type Accounts implements PaginatedArray {
+    page: PageMetadata
+    accounts: [Account!]
+}
+
+type AnnuityAccount implements Account {
+
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): Transactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    payoutType: PayoutType
+
+    policyProductType: PolicyProductType
+
+    "Amount paid out, based on mode frequency"
+    payoutAmount: Float
+
+    "Frequency of annuity payments"
+    payoutMode: PayoutMode
+
+    payoutStartDate: Date
+
+    payoutEndDate: Date
+
+    "Total number of payouts"
+    numberModalPayouts: Int
+
+    "Cash surrender value (net) available if contract is surrendered"
+    surrenderValue: Float
+
+    "Percentage of the accumulated value to be paid to the payee each year; used exclusive of payoutChangeAmount"
+    payoutChangePercentage: Float
+
+    "Incremental modal amount (positive or negative) by which the payout amount will be changed; used exclusive of payoutPercentage"
+    payoutChangeAmount: Float
+
+    "The number of modal periods comprising the duration of the certain period of an annuity payout"
+    periodCertainType: PeriodCertainType
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type AssetTransferNetwork {
+    """
+    The number used to identify the account within the asset transfer network.
+    If identifierType is ACCOUNT_NUMBER, this is the account number;
+    if identifierType is TOKENIZED_ACCOUNT_NUMBER, this is a tokenized account number
+    """
+    identifier: String
+
+    identifierType: PaymentNetworkIdentifierType
+
+    "The name of the institution holding the account"
+    institutionName: String
+
+    """
+    Institution identifier used by the asset transfer network ie. the Depository Trust and
+    Clearing Corporation code for the institution holding the account
+    """
+    institutionId: String
+
+    type: AssetTransferType
+
+    jointAccount: Boolean
+}
+
+type AssetTransferNetworkList implements PaginatedArray {
+    page: PageMetadata
+    assetTransferNetworks: [AssetTransferNetwork!]
+}
+
+type Bills {
+    """
+    Total payment due or next payment due.  Monthly payment due for loans
+    """
+    totalPaymentDue: Float
+
+    "The minimum amount which is due"
+    minimumPaymentDue: Float
+
+    dueDate: Date
+
+    "Whether the user's bill is paid automatically"
+    autoPayEnabled: Boolean
+
+    "The amount of money the user has set to autopay this bill"
+    autoPayAmount: Boolean
+
+    "The date the autopayment is set to trigger for this bill"
+    autoPayDate: Date
+
+    """
+    The amount that the user should have already paid. The value is negative if
+    user owes money
+    """
+    pastDueAmount: Float
+
+    "The amount of the most recent payment"
+    lastPaymentAmount: Float
+
+    lastPaymentDate: Date
+
+    "The amount of the last statement.  The value is negative if the user owes money"
+    statementBalance: Float
+
+    "The date the statement was issued"
+    statementDate: Date
+}
+
+type CardArt {
+    "Display label for the specific image"
+    label: String
+
+    """
+    The [URI](https://datatracker.ietf.org/doc/html/rfc2397) link
+    of a PNG, JPG or GIF image with proportions defined by
+    [ISO 8710 ID-1](https://en.wikipedia.org/wiki/ISO/IEC_7810) with 340x210 ratio and
+    width no greater than 512 pixels. The image at this URI must be accessible at all
+    times, with no additional authentication headers. Typically this is an image resource
+    located in the data provider's public web site or Content Delivery Network
+    """
+    imageUri: URI
+}
+
+type CommercialAccount implements Account {
+
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): CommercialTransactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    balanceAsOf: DateTime
+
+    openingLedgerBalance: Float
+
+    closingLedgerBalance: Float
+
+    currentLedgerBalance: Float
+
+    openingAvailableBalance: Float
+
+    currentAvailableBalance: Float
+
+    closingAvailableBalance: Float
+
+    nextDayAvailableBalance: Float
+
+    twoDaysPlusAvailableBalance: Float
+
+    "Number of outstanding credit transactions"
+    numberOfOutstandingCredits: Int
+
+    "Total amount of outstanding credits"
+    outstandingCreditsAmount: Float
+
+    "Number of outstanding debit transactions"
+    numberOfOutstandingDebits: Int
+
+    "Total amount of outstanding debits"
+    outstandingDebitsAmount: Float
+
+    "A list of specific treasury management defined balances"
+    commercialBalances: [CommercialBalance!]
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+"A specific treasury management defined balance"
+type CommercialBalance {
+    "The code for a specific treasury management defined field"
+    commercialCode: CommercialCode
+
+    amount: Float
+
+    memo: String
+}
+
+"""
+The code for a specific treasury management defined field.
+
+The [X9 BTRS/BTR3 standard](https://x9.org/standards/btrs/) (formerly named BAI2)
+for corporate and treasury data elements is proposed to provide the basis of
+(or starting point for) representing summary, account, and transaction codes
+for the Corp/Treasury Entity, subject to any necessary modifications useful
+to the members of the FDX consortium and users of the API specification
+"""
+type CommercialCode {
+    type: TreasuryManagementType
+
+    code: String
+}
+
+type CommercialTransaction implements Transaction {
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    immediateAvailableBalance: Float
+
+    nextDayAvailableBalance: Float
+
+    twoDaysPlusAvailableBalance: Float
+
+    referenceBankId: String
+
+    referenceBranchId: String
+
+    referenceCustomerId: String
+
+    commercialCode: CommercialCode
+}
+
+type CommercialTransactions implements PaginatedArray & Transactions {
+    page: PageMetadata
+    transactions: [CommercialTransaction!]!
+}
+
+type Contribution {
+    securityId: String
+
+    securityIdType: SecurityIdType
+
+    employerMatchPercentage: Float
+
+    employerMatchAmount: Float
+
+    employeePreTaxAmount: Float
+
+    employeePreTaxPercentage: Float
+
+    employeeAfterTaxAmount: Float
+
+    employeeAfterTaxPercentage: Float
+
+    "Employee Roth contribution amount"
+    employeeRothTaxAmount: Float
+
+    "Employee Roth contribution percentage"
+    employeeRothTaxPercentage: Float
+
+    employeeDeferPreTaxAmount: Float
+
+    employeeDeferPreTaxPercentage: Float
+
+    employeeYearToDate: Float
+
+    employerYearToDate: Float
+
+    rolloverContributionPercentage: Float
+
+    rolloverContributionAmount: Float
+
+    "If true, indicates that this is a catch up contribution"
+    catchUpContribution: Boolean
+}
+
+type Currency {
+    currencyRate: Float
+
+    currencyCode: CurrencyCode
+
+    originalCurrencyCode: CurrencyCode
+}
+
+type DebtSecurity implements Security {
+    _: ID
+
+    parValue: Float
+
+    debtType: DebtType
+
+    debtClass: DebtClass
+
+    "Bond coupon rate for next closest call date"
+    couponRate: Float
+
+    "Maturity date for next coupon"
+    couponDate: Date
+
+    couponMatureFrequency: CouponMatureFrequency
+
+    callPrice: Float
+
+    yieldToCall: Float
+
+    callDate: Date
+
+    callType: CallType
+
+    yieldToMaturity: Float
+
+    bondMaturityDate: Date
+}
+
+type DepositAccount implements Account {
+
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    balanceAsOf: DateTime
+
+    currentBalance: Float
+
+    openingDayBalance: Float
+
+    availableBalance: Float
+
+    annualPercentageYield: Float
+
+    interestYtd: Float
+
+    "Term of CD in months"
+    term: Int
+
+    "Maturity date for CDs"
+    maturityDate: Date
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): DepositTransactions!
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type DepositTransaction implements Transaction {
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    transactionType: DepositTransactionType
+
+    payee: String @length(max: 255) @deprecated(reason: "See transactionPayee")
+
+    checkNumber: Int
+}
+
+type DepositTransactions implements PaginatedArray & Transactions {
+    page: PageMetadata
+    transactions: [DepositTransaction!]!
+}
+
+type DigitalWallet implements Account {
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    balanceAsOf: DateTime
+
+    currentBalance: Float
+
+    openingDayBalance: Float
+
+    availableBalance: Float
+
+    annualPercentageYield: Float
+
+    interestYtd: Float
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): DigitalWalletTransactions!
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type DigitalWalletTransaction implements Transaction {
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    transactionType: DigitalWalletTransactionType
+
+    payee: String @length(max: 255) @deprecated(reason: "See transactionPayee")
+}
+
+type DigitalWalletTransactions implements PaginatedArray & Transactions {
+    page: PageMetadata
+    transactions: [DigitalWalletTransaction!]!
+}
+
+type FiPortion {
+    "Financial Institution-specific asset class"
+    assetClass: String
+
+    "Percentage of asset class that falls under this asset"
+    percent: Float
+}
+
+type Holding {
+    holdingId: ID
+
+    securityIds: [SecurityId!] # Why isn't this on Security
+
+    holdingName: String
+
+    holdingType: HoldingType
+
+    holdingSubType: HoldingSubType
+
+    positionType: PositionType
+
+    heldInAccount: HeldInAccount
+
+    description: String
+
+    symbol: String
+
+    originalPurchaseDate: Date
+
+    purchasedPrice: Float
+
+    currentAmortizationFactor: Float @bounds(min: 0, max: 1)
+
+    currentUnitPrice: Float
+
+    changeInPrice: Float
+
+    currentUnitPriceDate: Date
+
+    units: Float
+
+    marketValue: Float
+
+    faceValue: Float
+
+    averageCost: Boolean
+
+    cashAccount: Boolean
+
+    rate: Float
+
+    expirationDate: Date
+
+    inv401kSource: Inv401kSourceType
+
+    currency: Currency
+
+    assetClasses: [Portion!]
+
+    fiAssetClasses: [FiPortion!]
+
+    taxLots: [TaxLot!]
+
+    digitalUnits: String
+
+    security: Security
+}
+
+type InsuranceAccount implements Account {
+
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): InsuranceTransactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    policyPremium: Float
+
+    policyPremiumTerm: InsurancePremiumTerm
+
+    policyStartDate: Date
+
+    policyStatus: PolicyStatus
+
+    policyEndDate: Date
+
+    policyCoverageAmount: Float
+
+    bills: [Bills!]
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type InsuranceTransaction implements Transaction {
+
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    transactionType: InsuranceTransactionType
+}
+
+type InsuranceTransactions implements Transactions & PaginatedArray {
+    page: PageMetadata
+    transactions: [InsuranceTransaction!]!
+}
+
+type InvestmentAccount implements Account {
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): InvestmentTransactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    balanceAsOf: DateTime
+
+    allowedCheckWriting: Boolean
+
+    allowedOptionTrade: Boolean
+
+    currentValue: Float
+
+    holdings: [Holding!]
+
+    openOrders: [OpenOrder!]
+
+    contribution: [Contribution!]
+
+    vesting: [Vesting!]
+
+    investmentLoans: [InvestmentLoan!]
+
+    availableCashBalance: Float
+
+    margin: Boolean
+
+    marginBalance: Float
+
+    shortBalance: Float
+
+    rolloverAmount: Float
+
+    employerName: String
+
+    brokerId: String
+
+    planId: String
+
+    calendarYearFor401K: Int
+
+    balanceList: [InvestmentBalance!]
+
+    dailyChange: Float
+
+    percentageChange: Float
+
+    pensionSource: PensionSource
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type InvestmentBalance {
+    balanceName: String
+
+    balanceDescription: String
+
+    balanceType: InvestmentBalanceType
+
+    balanceValue: Float
+
+    balanceDate: Date
+
+    currency: Currency
+}
+
+type InvestmentLoan {
+    loanId: ID
+
+    loanDescription: String
+
+    initialLoanBalance: Float
+
+    loanStartDate: Date
+
+    currentLoanBalance: Float
+
+    dateAsOf: DateTime
+
+    loanRate: Float
+
+    loanPaymentAmount: Float
+
+    loanPaymentFrequency: LoanPaymentFrequency
+
+    loanPaymentInitial: Float
+
+    loanPaymentsRemaining: Int
+
+    loanMaturityDate: Date
+
+    loanInterestToDate: Float
+
+    loanTotalProjectedInterest: Float
+
+    loanNextPaymentDate: Date
+}
+
+type InvestmentTransaction implements Transaction {
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    transactionType: InvestmentTransactionType
+
+    shared: Float
+
+    faceValue: Float
+
+    price: Float
+
+    securityId: String
+
+    securityIdType: SecurityIdType
+
+    securityType: SecurityType
+
+    symbol: String
+
+    markup: Float
+
+    commission: Float
+
+    taxes: Float
+
+    fees: Float
+
+    load: Float
+
+    inv401kSource: Inv401kSourceType
+
+    confirmationNumber: String
+
+    fractionalCash: Float
+
+    incomeType: IncomeType
+
+    oldUnits: Float
+
+    splitRatioNumerator: Float
+
+    splitRatioDenominator: Float
+
+    newUnits: Float
+
+    subAccountSec: SubAccountType
+
+    subAccountFund: SubAccountType
+
+    loanId: String
+
+    loanPrincipal: Float
+
+    loanInterest: Float
+
+    payrollDate: Date
+
+    priorYearContrib: Boolean
+
+    withholding: Float
+
+    taxExempt: Boolean
+
+    gain: Float
+
+    stateWithholding: Float
+
+    penalty: Float
+
+    runningBalance: Float
+
+    unitPrice: Float
+
+    units: Float
+
+    transactionReason: TransactionReason
+
+    accruedInterest: Float
+
+    transferAction: TransferDirection
+
+    positionType: PositionType
+
+    digitalUnits: String
+
+    settlementTimestamp: DateTime
+}
+
+type InvestmentTransactions implements Transactions & PaginatedArray {
+    page: PageMetadata
+    transactions: [InvestmentTransaction!]!
+}
+
+type LineItem {
+    description: String
+
+    amount: Float
+
+    checkNumber: Int
+
+    memo: String @length(max: 255)
+
+    reference: String
+
+    images: [URI!] # Changed from imageIds
+
+    # Omit links
+}
+
+type LineOfCreditAccount implements Account {
+
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): LineOfCreditTransactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    balanceAsOf: Float
+
+    creditLine: Float
+
+    availableCredit: Float
+
+    """
+    Amount of next payment.
+    May differ from minimumPaymentAmount if the customer pays more than their minimum or out of cycle
+    """
+    nextPaymentAmount: Float
+
+    """
+    Date of next payment.
+    May differ from statementAmountDueDate if the customer pays out of cycle
+    """
+    nextPaymentDate: Date
+
+    principalBalance: Float
+
+    currentBalance: Float
+
+    "Minimum payment amount from last statement balance, which is due at `statementAmountDueDate`"
+    minimumPaymentAmount: Float
+
+    lastPaymentAmount: Float
+
+    lastPaymentDate: Date
+
+    pastDueAmount: Float
+
+    "Final balance amount at end of last statement"
+    lastStatementBalance: Float
+
+    lastStatementDate: Date
+
+    purchasesApr: Float
+
+    advancesApr: Float
+
+    cashAdvanceLimit: Float
+
+    availableCash: Float
+
+    financeCharges: Float
+
+    cardNetwork: String
+
+    cardArt: CardArt
+
+    "The payment due date listed on the statement balance"
+    statementAmountDueDate: Date
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type LineOfCreditTransaction implements Transaction {
+
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    transactionType: LineOfCreditTransactionType
+
+    checkNumber: Int
+
+    paymentDetails: PaymentDetails
+}
+
+type LineOfCreditTransactions implements Transactions & PaginatedArray {
+    page: PageMetadata
+    transactions: [LineOfCreditTransaction!]!
+}
+
+type LoanAccount implements Account {
+
+    # Omit accountCategory - handled via polymorphism
+
+    """
+    Long-term persistent identity of the account, though not an account number.
+    This identity must be unique to the owning institution
+    """
+    accountId: ID
+
+    # Omit error - handled at the protocol level
+
+    "Account type"
+    accountType: AccountType
+
+    """
+    Full account number for the end user's handle for
+    the account at the owning institution
+    """
+    accountNumber: String
+
+    """
+    Account display number for the end user's handle at the owning
+    institution. This is to be displayed by the Interface Provider
+    """
+    accountNumberDisplay: String
+
+    "Marketed product name for this account. Used in UIs to assist in account selection"
+    productName: String
+
+    "Name given by the user. Used in UIs to assist in account selection"
+    nickname: String
+
+    "Account status"
+    status: AccountStatus
+
+    description: String
+
+    accountOpenDate: Date
+
+    accountCloseDate: Date
+
+    currency: Currency
+
+    # "Array of Financial institution-specific attributes"
+
+    "Long-term persistent identity of the parent account. This is used to group accounts"
+    parentAccount: Account
+
+    "The line of business, such as consumer, consumer joint, small business, corporate, etc."
+    lineOfBusiness: String
+
+    """
+    The routing transit number (RTN) associated with the account number at the owning institution.
+    FDX v6.3 adds separate bankInstitutionId and bankTransitId properties and deprecates the prior
+    approach to use this field for concatenated Canadian institution IDs
+    """
+    routingTransitNumber: String
+
+    balanceType: BalanceType
+
+    "Contact information associated with this account"
+    contact: AccountContact
+
+    interestRate: Float
+
+    interestRateType: InterestRateType
+
+    interestRateAsOf: DateTime
+
+    """
+    Variable rate index name such as
+    EONIA, EURIBOR, EURREPO, FEFUND, LIBOR, PRIME, SOFR, SONIA, etc.
+    """
+    interestRateIndex: String
+
+    earlyPenaltyFlag: Boolean
+
+    transferIn: Boolean
+
+    transferOut: Boolean
+
+    billPayStatus: AccountBillPayStatus
+
+    micrNumber: String @length(max: 64)
+
+    lastActivityDate: Date
+
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    # Intentionally nested
+    transactions(pagination: Pagination, datePagination: DatePagination): LoanTransactions!
+
+    domicile: Domicile
+
+    # Intentionally nested
+    assetTransferNetworks(pagination: Pagination): AssetTransferNetworkList
+
+    # Intentionally nested
+    paymentNetworkList(pagination: Pagination): AccountPaymentNetworkList
+
+    # Intentionally nested
+    statements(pagination: Pagination): Statements
+
+    balanceAsOf: DateTime
+
+    principalBalance: Float
+
+    escrowBalance: Float
+
+    originalPrincipal: Float
+
+    originatingDate: Date
+
+    loanTerm: Int
+
+    totalNumberOfPayments: Int
+
+    nextPaymentAmount: Float
+
+    nextPaymentDate: Date
+
+    paymentFrequency: PaymentFrequency
+
+    compoundingPeriod: CompoundingPeriod
+
+    payOffAmount: Float
+
+    lastPaymentAmount: Float
+
+    lastPaymentDate: Date
+
+    maturityDate: Date
+
+    interestPaidYearToDate: Float
+
+    "Current school the student loan is connected to"
+    currentSchool: String
+
+    "Name of the institution providing the loan"
+    loanProviderName: String
+
+    "The Canadian 3-digit Institution (FID) associated with the account number, including leading zeros"
+    bankInstitutionId: String
+
+    "The Canadian 5-digit Transit number associated with the account number, including leading zeros"
+    bankTransitId: String
+}
+
+type LoanTransaction implements Transaction {
+
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+
+    transactionType: LoanTransactionType
+
+    paymentDetails: PaymentDetails
+}
+
+type LoanTransactions implements Transactions & PaginatedArray {
+    page: PageMetadata
+
+    transactions: [LoanTransaction!]!
+}
+
+type MutualFundSecurity implements Security {
+    _: ID
+
+    mutualFundType: MutualFundType
+
+    unitsStreet: Float
+
+    unitsUser: Float
+
+    reinvestDividends: Boolean
+
+    reinvestCapitalGains: Boolean
+
+    yield: Float
+
+    yieldAsOfDate: Date
+}
+
+type OpenOrder {
+    orderId: ID
+
+    securityId: String
+
+    securityIdType: SecurityIdType
+
+    symbol: String
+
+    description: String
+
+    units: Float
+
+    orderType: OrderType
+
+    unitPrice: Float
+
+    orderDuration: OrderDuration
+
+    subAccount: SubAccountType
+
+    limitPrice: Float
+
+    stopPrice: Float
+
+    inv401kSource: Inv401kSourceType
+}
+
+type OptionSecurity implements Security {
+    _: ID
+
+    secured: Secured
+
+    optionType: OptionType
+
+    strikePrice: Float
+
+    expireDate: Date
+
+    sharesPerContract: Float
+}
+
+type OtherSecurity implements Security {
+    _: ID
+
+    typeDescription: String
+}
+
+type PaymentNetworkOccurrenceTransferLimits {
+    transferMaxAmount: Float
+
+    transferRemainingAmount: Float
+}
+
+type PaymentNetworkTimeframeTransferLimits {
+    resetsOn: DateTime
+
+    transferMaxAmount: Float
+
+    transferRemainingAmount: Float
+
+    maxOccurrence: Int
+
+    remainingOccurrence: Int
+}
+
+type PaymentNetworkTransferLimits {
+    day: PaymentNetworkTimeframeTransferLimits
+
+    week: PaymentNetworkTimeframeTransferLimits
+
+    month: PaymentNetworkTimeframeTransferLimits
+
+    year: PaymentNetworkTimeframeTransferLimits
+
+    transaction: PaymentNetworkTimeframeTransferLimits
+}
+
+type PensionSource {
+    displayName: String
+
+    amount: Float
+
+    paymentOption: String
+
+    asOfDate: Date
+
+    frequency: PaymentFrequency
+
+    startDate: Date
+}
+
+type Portion {
+    assetClass: AssetClass
+
+    percent: Float
+}
+
+type RewardBalance {
+    name: String
+
+    type: RewardType
+
+    balance: Float
+
+    accruedYtd: Float @bounds(min: 0)
+
+    redeemedYtd: Float @bounds(min: 0)
+
+    qualifying: Boolean
+}
+
+type RewardBalances implements PaginatedArray {
+    page: PageMetadata
+
+    rewardBalance: [RewardBalance!]
+}
+
+type RewardCategories implements PaginatedArray {
+    page: PageMetadata
+
+    rewardCategories: [RewardCategory!]
+}
+
+type RewardCategory {
+    # Intentionally nested
+    rewardProgram: RewardProgram
+
+    categoryName: String
+
+    categoryId: ID
+
+    multiplier: Float @bounds(min: 0)
+
+    description: String
+}
+
+type RewardMembership {
+    # Intentionally nested
+    accounts(pagination: Pagination): Accounts
+
+    # Intentionally nested
+    customer(pagination: Pagination): Customer
+
+    memberId: ID
+
+    memberNumber: String
+
+    memberTier: String
+
+    businessOrConsumer: BusinessOrConsumer
+
+    balances(pagination: Pagination): RewardBalances
+}
+
+type RewardMemberships implements PaginatedArray {
+    page: PageMetadata
+    rewardMemberships: [RewardMembership!]
+}
+
+type RewardProgram {
+    rewardProgramId: ID
+
+    programName: String
+
+    programUrl: String
+
+    memberships(pagination: Pagination): RewardMemberships
+
+    categories(pagination: Pagination): RewardCategories
+}
+
+type RewardPrograms implements PaginatedArray {
+    page: PageMetadata
+
+    rewardPrograms: [RewardProgram!]
+}
+
+interface Security {
+    _: ID # At least one field in a type is required - see https://github.com/graphql/graphql-spec/issues/568
+}
+
+type Statement {
+    # Intentionally nested
+    account: Account
+
+    statementId: ID
+
+    statementDate: Date
+
+    description: String
+
+    # Omit links (?)
+
+    status: DocumentStatus
+}
+
+type Statements implements PaginatedArray {
+    page: PageMetadata
+    statements: [Statement!]
+}
+
+type SecurityId {
+    id: ID
+
+    idType: SecurityIdType
+}
+
+type StockSecurity implements Security {
+    _: ID
+
+    unitsStreet: Float
+
+    unitsUser: Float
+
+    reinvestDividends: Boolean
+
+    stockType: StockType
+
+    yield: Float
+
+    yieldAsOfDate: Date
+}
+
+type SweepSecurity implements Security {
+    _: ID
+
+    currentBalance: Float
+
+    availableBalance: Float
+
+    balanceAsOf: DateTime
+
+    checks: Boolean
+}
+
+type TaxLot {
+    originalPurchaseDate: Date
+
+    quantity: Float
+
+    purchasedPrice: Float
+
+    costBasis: Float
+
+    currentValue: Float
+
+    positionType: PositionType
+}
+
+interface Transaction {
+    # Omit accountCategory (handled by polymorphism)
+
+    # Intentionally nested
+    account: Account
+
+    transactionId: ID
+
+    """
+    For reverse postings, the identity of the transaction being
+    reversed. For the correction transaction, the identity of the
+    reversing post. For credit card posting transactions, the identity
+    of the authorization transaction
+    """
+    referenceTransaction: Transaction
+
+    postedTimestamp: DateTime
+
+    "The date and time that the transaction was added to the server backend systems"
+    transactionTimestamp: DateTime
+
+    """
+    The description of the transaction, such as information about a merchant's
+    name or place of business in a manner that is user friendly and accessible to the customer.
+    Detailed information on a payee, such as address, can be sent in `transactionPayee`
+    """
+    description: String
+
+    memo: String @length(max: 255)
+
+    debitCreditMemo: DebitCreditMemo
+
+    category: String
+
+    subCategory: String
+
+    reference: String
+
+    status: TransactionStatus
+
+    "The amount of money in the account currency"
+    amount: Float
+
+    "The amount of money in the foreign currency"
+    foreignAmount: Float
+
+    "The ISO 4217 code of the foreign currency"
+    foreignCurrency: CurrencyCode
+
+    "Images related to this transaction"
+    images: [URI]
+
+    lineItem: [LineItem!]
+
+    reward: TransactionReward
+
+    """
+    The payment card number (e.g., debit, credit or digital), suitably masked,
+    used to originate the transaction. May differ from primary account number as a
+    secondary or employee card or a one-time use number. This is an optional field
+    and won't be returned for certain types of transactions such as cash or check deposits
+    """
+    cardNumberDisplay: String
+
+    "The merchant or individual payee who was involved in the transaction"
+    transactionPayee: TransactionPayee
+}
+
+"""
+Primary demographic information for payee on a transaction;
+name, location, contact phone
+"""
+type TransactionPayee {
+
+    """
+    Name of the merchant (typically a business from which goods or services are rendered) or individual
+    """
+    name: BusinessOrIndividualName
+
+    "Address of the payee who received the payment"
+    address: DeliveryAddress
+
+    "Phone number of the payee who received the payment"
+    phone: TelephoneNumber
+}
+
+union BusinessOrIndividualName = BusinessName | IndividualName
+
+type TransactionReward {
+    category: RewardCategory
+
+    accrued: Float
+
+    adjusted: Float
+}
+
+interface Transactions implements PaginatedArray {
+    page: PageMetadata
+    transactions: [Transaction!]!
+}
+
+type TransferLimits {
+    out: PaymentNetworkTransferLimits
+
+    in: PaymentNetworkTransferLimits
+}
+
+type Vesting {
+    vestingDate: Date
+
+    Symbol: String
+
+    strikePrice: Float
+
+    vestingPercentage: Float
+
+    otherVestAmount: Float
+
+    otherVestPercentage: Float
+
+    vestedBalance: Float
+
+    unVestedBalance: Float
+
+    vestedQuantity: Float
+
+    unVestedQuantity: Float
+}
+
+### Enums
+"Indicates bill pay capabilities for an account"
+enum AccountBillPayStatus {
+    "Can be used for bill payment"
+    ACTIVE
+
+    "Account can be requested for bill payment"
+    AVAILABLE
+
+    "Account cannot participate in bill payment"
+    NOT_AVAILABLE
+
+    "Account requested for bill payment, but not available yet"
+    PENDING
+}
+
+# Omit AccountCategory - handled via polymorphism
+
+"The status of an account"
+enum AccountStatus {
+    CLOSED
+    DELINQUENT
+    NEGATIVECURRENTBALANCE
+    OPEN
+    PAID
+    PENDINGCLOSE
+    PENDINGOPEN
+    RESTRICTED
+}
+
+"The class of an investment asset"
+enum AssetClass {
+    DOMESTICBOND
+    INTLBOND
+    INTLSTOCK
+    LARGESTOCK
+    MONEYMARKET
+    OTHER
+    SMALLSTOCK
+}
+
+"The possible values for type of asset transfer"
+enum AssetTransferType {
+    CA_ATON
+    US_ACATS
+    US_DTC
+}
+
+"Type of balance for the account"
+enum BalanceType {
+    "Positive transaction amount increases balance"
+    ASSET
+
+    "Positive transaction amount decreases balance"
+    LIABILITY
+}
+
+"The call type for a stock option"
+enum CallType {
+    CALL
+    MATURITY
+    PREFUND
+    PUT
+}
+
+"Interest compounding Period"
+enum CompoundingPeriod {
+    ANNUALLY
+    BIWEEKLY
+    DAILY
+    MONTHLY
+    SEMIANNUALLY
+    SEMIMONTHLY
+    WEEKLY
+}
+
+"The frequency of a bond's coupon maturity"
+enum CouponMatureFrequency {
+    ANNUAL
+    MONTHLY
+    OTHER
+    QUARTERLY
+    SEMIANNUAL
+}
+
+"The posting type of a transaction"
+enum DebitCreditMemo {
+    CREDIT
+    DEBIT
+    MEMO
+}
+
+"The classification of a debt instrument"
+enum DebtClass {
+    CORPORATE
+    MUNICIPAL
+    OTHER
+    TREASURY
+}
+
+"The type of a debt instrument"
+enum DebtType {
+    COUPON
+    ZERO
+}
+
+"The type of a deposit transaction"
+enum DepositTransactionType {
+    ADJUSTMENT
+    ATMDEPOSIT
+    ATMWITHDRAWAL
+    BILLPAYMENT
+    CHECK
+    DEPOSIT
+    DIRECTDEPOSIT
+    DIVIDEND
+    FEE
+    INTEREST
+    POSCREDIT
+    POSDEBIT
+    "Money Deposit to the account based on preauthorized transaction"
+    PREAUTHORIZEDDEPOSIT
+    "Money Withdrawal from account based on preauthorized transaction"
+    PREAUTHORIZEDWITHDRAWAL
+    TRANSFER
+    WITHDRAWAL
+}
+
+"The type of a digital wallet transaction"
+enum DigitalWalletTransactionType {
+    ADJUSTMENT
+    BILL_PAYMENT
+    DEPOSIT
+    DIRECT_DEPOSIT
+    DIVIDEND
+    FEE
+    INTEREST
+    CREDIT
+    DEBIT
+    WITHDRAWAL
+    MERCHANT_PAYMENT
+    MERCHANT_REFUND
+    TRANSFER_IN
+    TRANSFER_OUT
+}
+
+"Defines the status of a document"
+enum DocumentStatus {
+    AVAILABLE
+    PROCESSING
+    FAILED
+}
+
+"The type of holdings of an investment account"
+enum HeldInAccount {
+    CASH
+    MARGIN
+    OTHER
+    SHORT
+}
+
+"The subtype of an investment holding"
+enum HoldingSubType {
+    CASH
+    MONEYMARKET
+}
+
+"The type of an investment holding"
+enum HoldingType {
+    "Financial product that pays out a fixed stream of payments"
+    ANNUITY
+
+    "Debt security as a loan to a government, agency or company, repaid with interest"
+    BOND
+
+    "Certificate of Deposit, a savings account with a fixed rate and term"
+    CD
+
+    "Digital representation of an asset or right that is stored and transferred on a digital network such as the internet or a blockchain"
+    DIGITALASSET
+
+    "Pooled collection of assets invested in stocks, bonds, and other securities"
+    MUTUALFUND
+
+    "The right to buy a specific number of stock shares at a pre-set price"
+    OPTION
+
+    "Another type of holding not listed here"
+    OTHER
+
+    "A share in the ownership of a company"
+    STOCK
+}
+
+"The type of income of an investment transaction"
+enum IncomeType {
+    CGLONG
+    CGSHORT
+    MISC
+}
+
+"Payment terms for insurance premiums"
+enum InsurancePremiumTerm {
+    ANNUAL
+    MONTHLY
+}
+
+"The type of an insurance transaction"
+enum InsuranceTransactionType {
+    ADJUSTMENT
+    FEE
+    INTEREST
+    PAYMENT
+}
+
+"The type of interest rate"
+enum InterestRateType {
+    FIXED
+    VARIABLE
+}
+
+"The source of a 401k investment"
+enum Inv401kSourceType {
+    AFTERTAX
+    MATCH
+    OTHERNONVEST
+    OTHERVEST
+    PRETAX
+    PROFITSHARING
+    ROLLOVER
+}
+
+"The type of an investment balance"
+enum InvestmentBalanceType {
+    AMOUNT
+    PERCENTAGE
+}
+
+"The type of an investment transaction"
+enum InvestmentTransactionType {
+    ADJUSTMENT
+    AIRDROP
+    ATM
+    CASH
+    CHECK
+    CLOSURE
+    CLOSUREOPT
+    CONTRIBUTION
+    DEP
+    DEPOSIT
+    DIRECTDEBIT
+    DIRECTDEP
+    DIV
+    DIVIDEND
+    DIVIDENDREINVEST
+    EXPENSE
+    FEE
+    FORKED
+    INCOME
+    INTEREST
+    INVEXPENSE
+    JRNLFUND
+    JRNLSEC
+    MARGININTEREST
+    MINED
+    OPTIONEXERCISE
+    OPTIONEXPIRATION
+    OTHER
+    PAYMENT
+    POS
+    PURCHASED
+    PURCHASEDTOCOVER
+    PURCHASETOCLOSE
+    PURCHASETOOPEN
+    REINVESTOFINCOME
+    REPEATPMT
+    RETURNOFCAPITAL
+    SOLD
+    SOLDTOCLOSE
+    SOLDTOOPEN
+    SPLIT
+    SRVCHG
+    STAKED
+    TRANSFER
+    WITHDRAWAL
+    XFER
+}
+
+"The frequency of payments on a loan"
+enum LoanPaymentFrequency {
+    ANNUALLY
+    BIMONTHLY
+    BIWEEKLY
+    FOURWEEKS
+    MONTHLY
+    OTHER
+    QUARTERLY
+    SEMIANNUALLY
+    TWICEMONTHLY
+    WEEKLY
+}
+
+"Defines the type of a loan transaction"
+enum LoanTransactionType {
+    "Adjustment or correction"
+    ADJUSTMENT
+
+    "Additional payment beyond the required payment to reduce the principal"
+    DOUBLE_UP_PAYMENT
+
+    "Fee charge. For example, a late payment fee"
+    FEE
+
+    "Interest charge"
+    INTEREST
+
+    "A single payment of money, as opposed to a series of payments made over time"
+    LUMP_SUM_PAYMENT
+
+    "Required payment that satisfies the minimum payment (e.g. principal + interest for mortgages)"
+    PAYMENT
+
+    "Payment that satisfies the terms of the mortgage loan and completely pays off the debt"
+    PAYOFF
+
+    "Payment that satisfies deferral of a required payment"
+    SKIP_PAYMENT
+}
+
+"The type of a line of credit transaction"
+enum LineOfCreditTransactionType {
+    ADJUSTMENT
+    CHECK
+    FEE
+    INTEREST
+    PAYMENT
+    PURCHASE
+    WITHDRAWAL
+}
+
+"The type of a mutual fund"
+enum MutualFundType {
+    CLOSEEND
+    OPENEND
+    OTHER
+}
+
+"The type of a stock option"
+enum OptionType {
+    CALL
+    PUT
+}
+
+"The duration of the order"
+enum OrderDuration {
+    DAY
+    GOODTILLCANCEL
+    IMMEDIATE
+}
+
+"The type of the order"
+enum OrderType {
+    BUY
+    BUYTOCOVER
+    BUYTOOPEN
+    SELL
+    SELLCLOSE
+    SELLSHORT
+    SELLTOCOVER
+    SELLTOOPEN
+}
+
+"The frequency of payments"
+enum PaymentFrequency {
+    ANNUALLY
+    BIWEEKLY
+    DAILY
+    MONTHLY
+    SEMIANNUALLY
+    SEMIMONTHLY
+    WEEKLY
+}
+
+"Suggested values for Payment Initiation Identifier Type"
+enum PaymentNetworkIdentifierType {
+    ACCOUNT_NUMBER
+    TOKENIZED_ACCOUNT_NUMBER
+}
+
+"Suggested values for Payment Network Type"
+enum PaymentNetworkType {
+    "Automated Clearing House Settlement System"
+    CA_ACSS
+
+    "Large-Value Transfer System"
+    CA_LVTS
+
+    "Automated Clearing House"
+    US_ACH
+
+    "Clearinghouse Interbank Payments System"
+    US_CHIPS
+
+    "Federal Reserve Instant Payment System"
+    US_FEDNOW
+
+    "Fedwire Funds Service"
+    US_FEDWIRE
+
+    "US Real Time Payments System"
+    US_RTP
+}
+
+"Frequency of annuity payments"
+enum PayoutMode {
+    ANNUALLY
+    BIWEEKLY
+    DAILY
+    MONTHLY
+    SEMIANNUALLY
+    SEMIMONTHLY
+    WEEKLY
+}
+
+"Indicates a type of payout such as immediate or deferred"
+enum PayoutType {
+    "Deferred payout starts at a predetermined date in the future"
+    DEFERRED
+
+    "Immediate payout begins paying out shortly after the annuity is purchased"
+    IMMEDIATE
+}
+
+"The number of modal periods comprising the duration of the certain period of an annuity payout"
+enum PeriodCertainType {
+    FIVE_YEAR
+    TEN_YEAR
+    TWENTY_YEAR
+    THIRTY_YEAR
+
+    "Not a Period Certain"
+    NONE
+}
+
+"Distinguishes options in annuity payouts; values are defined by the carrier"
+enum PolicyProductType {
+    "Payout is based on a guaranteed rate of return by the carrier"
+    FIXED
+
+    "Payout is based on the variable performance of the investments the buyer chooses"
+    VARIABLE
+}
+
+"The status of an insurance policy account"
+enum PolicyStatus {
+    "At least one component of the insurance policy is in force"
+    ACTIVE
+
+    "Benefits for a death claim have been settled with the insured"
+    DEATH_CLAIM_PAID
+
+    "A death claim has been submitted but not yet settled"
+    DEATH_CLAIM_PENDING
+
+    "Nonpayment of premium has exhausted the policy's Grace Period"
+    EXPIRED
+
+    "A premium is due but before lapse in coverage begins"
+    GRACE_PERIOD
+
+    "After the Grace Period has been exhausted but before final expiration; during Lapse Pending, policy reinstatement may still be possible"
+    LAPSE_PENDING
+
+    "Either the insurance company or the insured cancel the coverage of a cancellable insurance policy"
+    TERMINATED
+
+    "A premium payment is waived under certain conditions due to a payer benefit clause"
+    WAIVER
+}
+
+"The type of an investment position"
+enum PositionType {
+LONG
+SHORT
+}
+
+"The type of the reward balance"
+enum RewardType {
+    "Rewards balances enumerated using a monetary amount"
+    CASHBACK
+
+    "Rewards balances enumerated using distance"
+    MILES
+
+    "Default when a reward balance is not of type CASHBACK or MILES (for example, stars)"
+    POINTS
+}
+
+"How the option is secured"
+enum Secured {
+    COVERED
+    NAKED
+}
+
+"The type of security"
+enum SecurityCategory {
+    DEBT_SECURITY
+    MUTUAL_FUND_SECURITY
+    OPTION_SECURITY
+    OTHER_SECURITY
+    STOCK_SECURITY
+    SWEEP_SECURITY
+}
+
+"The source of the identifier for a security\n\n  | Value | Description |\n  |-----|-----|\n  | CINS | CUSIP International Numbering System is a global securities identification numbering system that provides |\n  | CMC | Coin Market Cap |\n  | CME | Chicago Mercantile Exchange |\n  | CUSIP | Committee on Uniform Securities Identification Procedures |\n  | ISIN | International Securities Identification Number |\n  | ITSA | International Securities Identification Number Technical Committee |\n  | NASDAQ | National Association of Securities Dealers Automated Quotations |\n  | SEDOL | Stock Exchange Daily Official List |\n  | SICC | Standard Identification Code for Institutional Investment |\n  | VALOR | SIX Swiss Exchange |\n  | WKN | Wertpapierkennnummer |"
+enum SecurityIdType {
+    "CUSIP International Numbering System) is a global securities identification numbering system that provides"
+    CINS
+
+    "Coin Market Cap"
+    CMC
+
+    "Chicago Mercantile Exchange"
+    CME
+
+    "Committee on Uniform Securities Identification Procedures"
+    CUSIP
+
+    "International Securities Identification Number"
+    ISIN
+
+    "International Securities Identification Number Technical Committee"
+    ITSA
+
+    "National Association of Securities Dealers Automated Quotations"
+    NASDAQ
+
+    "Stock Exchange Daily Official List"
+    SEDOL
+
+    "Standard Identification Code for Institutional Investment"
+    SICC
+
+    "SIX Swiss Exchange"
+    VALOR
+
+    "Wertpapierkennnummer"
+    WKN
+}
+
+"The type of a security"
+enum SecurityType {
+    "Debt security as a loan to a government, agency or company, repaid with interest"
+    BOND
+
+    "Any type of security that must be paid back in full along with interest"
+    DEBT
+
+    "Digital representation of an asset or right that is stored and transferred on a digital network such as the internet or a blockchain"
+    DIGITALASSET
+
+    "Pooled collection of assets invested in stocks, bonds, and other securities"
+    MUTUALFUND
+
+    "The right to buy a specific number of stock shares at a pre-set price"
+    OPTION
+
+    "Another type of security not listed here"
+    OTHER
+
+    "A share in the ownership of a company"
+    STOCK
+
+    "Interest-earning account used to collect low- or non-interest-earning cash at close of day"
+    SWEEP
+}
+
+"The type of a stock instrument"
+enum StockType {
+COMMON
+CONVERTIBLE
+OTHER
+PREFERRED
+}
+
+"The subtype of an account"
+enum SubAccountType {
+CASH
+MARGIN
+OTHER
+SHORT
+}
+
+"The reason for an investment transaction"
+enum TransactionReason {
+CALL
+MATURITY
+SELL
+}
+
+"The status of a transaction"
+enum TransactionStatus {
+AUTHORIZATION
+MEMO
+PENDING
+POSTED
+}
+
+"Transaction transfer direction"
+enum TransferDirection {
+    IN
+    OUT
+}
+
+"The source of Treasury Management account definition"
+enum TreasuryManagementType {
+    BAI
+    BTRS
+    ISO
+    SWIFT
+}
+
+"The units of an investment transaction"
+enum UnitType {
+    CURRENCY
+    SHARES
+}

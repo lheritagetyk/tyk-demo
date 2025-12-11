@@ -1,0 +1,429 @@
+extend type Query {
+    searchForPayrollReports(pagination: Pagination): PayrollReports
+    getPayrollReport(payrollReportId: ID): PayrollReport
+    getPaystubs(pagination: Pagination, datePagination: DatePagination): PaystubList
+    getPaystub(paystubId: ID): Paystub
+}
+
+type BasePayroll {
+    rate: MonetaryAmount!
+    rateType: PayrollRateType!
+}
+
+type PaystubList implements PaginatedArray {
+    page: PageMetadata
+    paystubs: [Paystub!]!
+}
+
+type Paystub {
+    """
+    The paystub identification number, if any. This can be any ID which the data provider creates
+    specific to the consenting person's paystub, perhaps simply the pay date as a string
+    optionally followed by a sequence number: "2024-09-30-01". Need only be unique within
+    the current employee's consent / token, according to data provider's preference
+    """
+    paystubId: ID
+    "The data on the paystub is as of this date"
+    dataAsOf: Date
+    "The original source of the paystub data"
+    source: PaystubSource
+    "The employee"
+    employee: Employee!
+    "The employer for the job/position"
+    employer: Employer!
+    "The date range and payment date for this paystub"
+    payPeriod: PayPeriod!
+    """
+    The frequency of payments. In pay period length order, one of
+    DAILY, WEEKLY, BI-WEEKLY, SEMI-MONTHLY, EVERY 2.6 WEEKS, EVERY 4 WEEKS,
+    MONTHLY, EVERY 5.2 WEEKS, QUARTERLY, SEMI-ANNUALLY, ANNUALLY, OTHER
+    """
+    payrollFrequency: PayrollFrequency!
+    "Description of the frequency, required if specified as OTHER"
+    otherFrequency: String
+    "Gross pay and year-to-date amounts and currency for this paystub"
+    grossPay: PayAmount!
+    "Net pay and year-to-date amounts and currency for this paystub"
+    netPay: PayAmount!
+    "National, regional and local tax withholding"
+    withholding: PayPeriodWithholding
+    "All the earning components for this pay period"
+    earnings: [EarningComponent!]
+    """
+    All the named deductions for this pay period,
+    with pay period and year-to-date amounts and currency.
+    Common names to use for deductions are Retirement, Medical,
+    Dental, Vision, Garnishment, and Other Miscellaneous
+    """
+    deductions: [PayAmount!]
+    "The detailed splits of this payment between checks and/or deposits"
+    paymentDetails: [PaymentDetail!]
+    "All the disclaimer notes for this pay period"
+    disclaimers: [String!]
+}
+
+"""
+The source of the paystub data,
+PAYROLL_PROCESSOR, EMPLOYER, or THIRD_PARTY
+"""
+enum PaystubSource {
+    PAYROLL_PROCESSOR
+    EMPLOYER
+    THIRD_PARTY
+}
+
+"""
+The payment amount and year-to-date amount, with optional name and/or currency,
+for this named pay element, earning or deduction. (Inherits properties `amount` and `currency`
+from `MonetaryAmount`)
+"""
+interface IPayAmount implements IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+
+    "Name of this pay element, earning or deduction on this paystub, if needed"
+    name: String
+
+    "Year-to-date amount for this pay element, earning or deduction"
+    yearToDate: MonetaryAmount
+}
+
+"""
+The payment amount and year-to-date amount, with optional name and/or currency,
+for this named pay element, earning or deduction. (Inherits properties `amount` and `currency`
+from `MonetaryAmount`)
+"""
+type PayAmount implements IPayAmount & IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+
+    "Name of this pay element, earning or deduction on this paystub, if needed"
+    name: String
+
+    "Year-to-date amount for this pay element, earning or deduction"
+    yearToDate: MonetaryAmount
+}
+
+"""
+A single named pay component earned on this paystub
+with amount and optional currency and/or year-to-date amount.
+Common names to use for earned components that would fall under
+OTHER type (in addition to names for BASE, BONUS, COMMISSION,
+and OVERTIME types) are Tips, Stock, Workers Compensation,
+Pension, and Severance. (Inheriting properties `amount`, `currency`,
+`name` and `yearToDate` from `PayAmount`)
+"""
+type EarningComponent implements IPayAmount & IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+
+    "Name of this pay element, earning or deduction on this paystub, if needed"
+    name: String
+
+    "Year-to-date amount for this pay element, earning or deduction"
+    yearToDate: MonetaryAmount
+
+    "The rate used to calculate this earned component amount"
+    rate: Float
+
+    """
+    The unit for this rate. In time period length order, one of HOURLY,
+    DAILY, WEEKLY, BI-WEEKLY, SEMI-MONTHLY, EVERY 2.6 WEEKS, EVERY 4 WEEKS,
+    MONTHLY, EVERY 5.2 WEEKS, QUARTERLY, SEMI-ANNUALLY, ANNUALLY, OTHER
+    """
+    rateType: PayrollRateType
+
+    "The number of hours paid for this component amount"
+    hours: Float
+
+    """
+    The GSE Mapping for a specific earning component.
+    For a Government Sponsored Enterprise (GSE), such as Fannie Mae or Freddie Mac.
+    One of BASE, BONUS, COMMISSION, OTHER, OVERTIME
+    """
+    type: EarningType
+}
+
+"""
+The GSE Mapping for a specific earning component.
+Government Sponsored Enterprise (GSE), such as Fannie Mae or Freddie Mac.
+One of BASE, BONUS, COMMISSION, OTHER, OVERTIME
+"""
+enum EarningType {
+    BASE
+    BONUS
+    COMMISSION
+    OTHER
+    OVERTIME
+}
+
+"Detail for split payments"
+type PaymentDetail {
+    "Name of the payment method, either CHECK or DIRECT_DEPOSIT (or CASH)"
+    method: PaymentMethod
+
+    "Amount of the check or direct deposit"
+    payment: MonetaryAmount
+
+    "Percentage split for this check or direct deposit amount"
+    percentSplit: Float
+
+    "If payment by CHECK, the last four of the check number, i.e. xxxxx-x0000"
+    checkNumber: String
+
+    "If payment by DIRECT_DEPOSIT, the details of the deposit account"
+    directDeposit: PayrollDirectDeposit
+}
+
+"If payment by DIRECT_DEPOSIT, the details of the target account"
+type PayrollDirectDeposit {
+    "The deposit bank's routing transit number"
+    routingTransitNumber: String
+
+    "Account number last four for the deposit, i.e. masked xxxxx-x0000"
+    accountNumber: String
+
+    """
+    Type of bank account into which deposit was made,
+    typically CHECKING or SAVINGS
+    """
+    accountType: AccountType
+}
+
+"The date range and payment date for this paystub"
+type PayPeriod {
+    "The date of the payment for this paystub"
+    payDate: Date!
+
+    "The start date of the pay period for this paystub"
+    startDate: Date
+
+    "The end date of the pay period for this paystub"
+    endDate: Date!
+}
+
+"National, regional and local tax withholdings"
+type PayPeriodWithholding {
+    "Tax filing status of the employee for this pay period"
+    taxFilingStatus: String!
+
+    "The country for the federal withholding amount"
+    country: CountryCode!
+
+    "All the various named national / federal withholdings for this pay period"
+    federalWithholdings: [FederalTaxWithholding]
+
+    "All the various named regional and/or local withholdings for this pay period"
+    regionalWithholdings: [RegionalTaxWithholding]
+}
+
+"""
+National / federal tax withholding.
+Common names to use for federal withholdings are Federal,
+Social Security, and Medicare. (Inheriting properties `amount`,
+`currency`, `name` and `yearToDate` from `PayAmount`)
+"""
+type FederalTaxWithholding implements IPayAmount & IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+
+    "Name of this pay element, earning or deduction on this paystub, if needed"
+    name: String!
+
+    "Year-to-date amount for this pay element, earning or deduction"
+    yearToDate: MonetaryAmount
+
+    "Percentage rate for this federal tax withholding, if specified"
+    percent: Float
+}
+
+"""
+Regional and/or locality tax withholding.
+Common names to use for regional withholdings are State, Local,
+State Unemployment Insurance, Voluntary Plan Disability Insurance,
+State Disability Insurance, and Temporary Disability Insurance.
+(Inheriting properties `amount`, `currency`, `name` and
+`yearToDate` from `PayAmount`)
+"""
+type RegionalTaxWithholding implements IPayAmount & IMonetaryAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+
+    "Name of this pay element, earning or deduction on this paystub, if needed"
+    name: String!
+
+    "Year-to-date amount for this pay element, earning or deduction"
+    yearToDate: MonetaryAmount
+
+    "Name or code of state, province, canton, prefecture or sub-national region"
+    region: String
+
+    "Name of sub-regional locality such as city, if any"
+    locality: String
+
+    "Percentage rate for this regional or local tax withholding, if specified"
+    percent: Float
+}
+
+type Employee implements IPerson & IContacts {
+    employeeId: ID
+    name: IndividualName!
+    "Array of the contact email addresses"
+    emails: [String!]
+
+    "Array of the contact physical addresses"
+    addresses: [DeliveryAddress!]
+
+    "Array of the contact telephone numbers"
+    telephones: [TelephoneNumber!]
+
+    "The person's date of birth"
+    dateOfBirth: Date
+
+    "Country specific Tax Id associated with this customer (SIN or NAS in Canada, SSN or TIN in US, etc.)"
+    taxId: String
+
+    "Country originating the Customer's taxId element"
+    taxIdCountry: CountryCode
+
+    "A federal (such as passport) or state (such as driver's license) issued identifier"
+    governmentId: String
+}
+
+type Employer {
+    employerId: ID
+    name: BusinessName
+    dbas: [String!]
+    taxId: String
+    taxIdCountry: CountryCode
+    contacts: Contacts
+}
+
+type Employment {
+    employer: Employer!
+    jobTitle: String
+    originalHireDate: Date
+    mostRecentHireDate: Date
+    endDate: Date
+    status: ActiveStatus!
+    supplementalStatus: SupplementalStatus
+    type: EmploymentType
+}
+
+type GrossPay {
+    total: MonetaryAmount!
+    base: MonetaryAmount
+    bonus:MonetaryAmount
+    commission: MonetaryAmount
+    overtime: MonetaryAmount
+    otherEarnings: [OtherAmount!]
+}
+
+type Income {
+    baseRate: BasePayroll
+    payrollFrequency: PayrollFrequency
+    "Description of the frequency, required if specified as OTHER"
+    otherFrequency: String
+    latestPayDate: Date
+    latestPayPeriodEndDate: Date
+    annualPay: AnnualPaymentAmounts
+}
+
+type OtherAmount {
+    "The monetary amount"
+    amount: Float!
+
+    "Currency code of the monetary amount"
+    currency: CurrencyCode
+
+    name: String
+}
+
+type AnnualPaymentAmounts {
+    year: Int!
+    grossPay: GrossPay!
+    netPay: MonetaryAmount
+}
+
+type PayrollReport {
+    reportId: ID!
+    reportType: PayrollReportType!
+    generationDate: Date!
+    dataAsOf: Date
+    employee: Employee!
+    employment: Employment!
+    incomes: [Income!]
+    link: URI
+}
+
+type PayrollReports implements PaginatedArray {
+    page: PageMetadata
+    payrollReports: [PayrollReport!]!
+}
+
+enum ActiveStatus {
+    ACTIVE
+    INACTIVE
+}
+
+enum EmploymentType {
+    CONTRACTED
+    FULL_TIME
+    OTHER
+    PART_TIME
+    SEASONAL
+    TEMPORARY
+}
+
+enum PayrollFrequency {
+    ANNUALLY
+    BI_WEEKLY
+    DAILY
+    EVERY_2_6_WEEKS
+    EVERY_4_WEEKS
+    EVERY_5_2_WEEKS
+    MONTHLY
+    QUARTERLY
+    SEMI_ANNUALLY
+    SEMI_MONTHLY
+    WEEKLY
+}
+
+enum PayrollRateType {
+    ANNUAL
+    DAILY
+    HOURLY
+    OTHER
+}
+
+enum PayrollReportType {
+    VOE
+    VOIE
+}
+
+enum SupplementalStatus {
+    FURLOUGHED
+    LEAVE
+    MEDICAL_LEAVE
+    MILITARY_LEAVE
+    PATERNITY_LEAVE
+    QUIT
+    RETIRED
+    TERMINATED
+    VACATION
+}

@@ -1,0 +1,17 @@
+{
+  "publicJWK": {
+    "kty": "EC",
+    "x": "DIOsi4dGIWHETgxfWa8plX1nsd_aTm_jcc1v_X0SPNY",
+    "y": "LCD9SU4csp9xz5_qqM99PwRrlNuttjqq86xFvKStBr0",
+    "crv": "P-256"
+  },
+  "privateJWK": {
+    "kty": "EC",
+    "x": "DIOsi4dGIWHETgxfWa8plX1nsd_aTm_jcc1v_X0SPNY",
+    "y": "LCD9SU4csp9xz5_qqM99PwRrlNuttjqq86xFvKStBr0",
+    "crv": "P-256",
+    "d": "tLzGfJdUDagMItGOAfU9mJAKhkUAJIdspi_VcBR7qfk"
+  },
+  "thumbprint": "-ScGL9f6Qfoyv_UCHl6q55_FMNvLX5f-Iqq9pfnaBj0",
+  "created": "2025-10-31T19:58:40.276Z"
+}

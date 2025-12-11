@@ -1,0 +1,14 @@
+extend type Mutation {
+    reportSuspectedFraudIncident(suspectedFraudIncident: SuspectedFraudIncident): ID
+}
+
+input SuspectedFraudIncident {
+    type: SuspectedFraudIncidentType
+    suspectedIncidentId: ID
+    reason: String @length(max: 256)
+    reporter: PartyForCreate
+}
+
+enum SuspectedFraudIncidentType {
+    ACCOUNT_TAKEOVER
+}

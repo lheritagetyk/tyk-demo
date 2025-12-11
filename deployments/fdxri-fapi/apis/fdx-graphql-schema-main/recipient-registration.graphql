@@ -1,0 +1,31 @@
+extend type Query {
+    getRecipient(clientId: ID): Recipient
+}
+
+extend type Mutation {
+    createRecipient(recipeintRequest: RecipientRequest): Recipient
+    updateRecipient(clientId: ID, recipientRequest: RecipientRequest): Recipient
+    deleteRecipient(clientId: ID): Recipient
+}
+
+type Recipient implements IRecipientRequest {
+    clientId: String!
+    clientName: String!
+    description: String
+    redirectUris: [URI!]!
+    logoUri: URI
+    clientUri: URI
+    contacts: [String!]
+    scope: String
+    durationType: [ConsentDurationType!]
+    durationPeriod: Int
+    lookbackPeriod: Int
+    registryReferences: [RegistryReference!]
+    intermediaries: [Intermediary!]
+    clientSecret: String
+    grantTypes: [String!]!
+    tokenEndpointAuthMethod: String!
+    registrationClientUri: URI
+    status: String
+    registrationAccessToken: String
+}

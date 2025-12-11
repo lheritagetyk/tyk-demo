@@ -1,0 +1,145 @@
+{
+  "id": "b202beee-0efa-49d3-bc2a-edb958631a8d",
+  "clientId": "my-client",
+  "name": "my-test",
+  "description": "Test Client for FAPI",
+  "rootUrl": "",
+  "adminUrl": "",
+  "baseUrl": "",
+  "surrogateAuthRequired": false,
+  "enabled": true,
+  "alwaysDisplayInConsole": false,
+  "clientAuthenticatorType": "client-jwt",
+  "secret": "XOIjsthPLSb0WET7Rhko8CL0BZPAb2Pd",
+  "redirectUris": [
+    "http://localhost:3005/callback"
+  ],
+  "webOrigins": [
+    "http://localhost:3005"
+  ],
+  "notBefore": 0,
+  "bearerOnly": false,
+  "consentRequired": true,
+  "standardFlowEnabled": true,
+  "implicitFlowEnabled": false,
+  "directAccessGrantsEnabled": false,
+  "serviceAccountsEnabled": true,
+  "authorizationServicesEnabled": true,
+  "publicClient": false,
+  "frontchannelLogout": true,
+  "protocol": "openid-connect",
+  "attributes": {
+    "access.token.lifespan": "300",
+    "token.endpoint.auth.method": "private_key_jwt",
+    "client.secret.creation.time": "1761854528",
+    "token.endpoint.auth.signing.alg": "ES256",
+    "oauth2.device.authorization.grant.enabled": "false",
+    "use.jwks.url": "true",
+    "access.token.signed.response.alg": "ES256",
+    "backchannel.logout.revoke.offline.tokens": "false",
+    "use.refresh.tokens": "true",
+    "oidc.ciba.grant.enabled": "false",
+    "client.use.lightweight.access.token.enabled": "false",
+    "id.token.signed.response.alg": "ES256",
+    "backchannel.logout.session.required": "true",
+    "client_credentials.use_refresh_token": "false",
+    "jwks.url": "http://host.docker.internal:8082/.well-known/jwks.json",
+    "tls.client.certificate.bound.access.tokens": "false",
+    "require.pushed.authorization.requests": "true",
+    "acr.loa.map": "{}",
+    "display.on.consent.screen": "false",
+    "pkce.code.challenge.method": "S256",
+    "token.response.type.bearer.lower-case": "false",
+    "dpop.bound.access.tokens": "true"
+  },
+  "authenticationFlowBindingOverrides": {},
+  "fullScopeAllowed": true,
+  "nodeReRegistrationTimeout": -1,
+  "protocolMappers": [
+    {
+      "id": "40ba8e3a-7d8f-4d4c-b0f1-42cccd6366af",
+      "name": "Client IP Address",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usersessionmodel-note-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.session.note": "clientAddress",
+        "introspection.token.claim": "true",
+        "userinfo.token.claim": "true",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "clientAddress",
+        "jsonType.label": "String"
+      }
+    },
+    {
+      "id": "008ade5c-fcdf-4639-9b6a-660e5e0a1a6b",
+      "name": "Client Host",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usersessionmodel-note-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.session.note": "clientHost",
+        "introspection.token.claim": "true",
+        "userinfo.token.claim": "true",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "clientHost",
+        "jsonType.label": "String"
+      }
+    },
+    {
+      "id": "2331c65e-c91e-45e8-93c1-6831a2449db4",
+      "name": "dpop-cnf-claim",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-hardcoded-claim-mapper",
+      "consentRequired": false,
+      "config": {
+        "introspection.token.claim": "true",
+        "claim.value": "{\"jkt\":\"t5PgpQQTe_dqIaX-pmSX8Y38VDfRCD6mPW--BjNLWAo\"}",
+        "userinfo.token.claim": "false",
+        "id.token.claim": "false",
+        "access.token.claim": "true",
+        "claim.name": "cnf",
+        "jsonType.label": "JSON",
+        "access.tokenResponse.claim": "false"
+      }
+    },
+    {
+      "id": "4c0169fb-bc70-45db-869b-71e4515ac108",
+      "name": "Client ID",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usersessionmodel-note-mapper",
+      "consentRequired": false,
+      "config": {
+        "user.session.note": "client_id",
+        "introspection.token.claim": "true",
+        "userinfo.token.claim": "true",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "client_id",
+        "jsonType.label": "String"
+      }
+    }
+  ],
+  "defaultClientScopes": [
+    "web-origins",
+    "acr",
+    "roles",
+    "profile",
+    "email"
+  ],
+  "optionalClientScopes": [
+    "payment-consent",
+    "address",
+    "phone",
+    "offline_access",
+    "payments",
+    "microprofile-jwt"
+  ],
+  "access": {
+    "view": true,
+    "configure": true,
+    "manage": true
+  }
+}

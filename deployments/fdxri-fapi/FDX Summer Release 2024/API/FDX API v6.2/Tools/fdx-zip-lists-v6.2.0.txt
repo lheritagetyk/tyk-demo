@@ -1,0 +1,33 @@
+Creating API zip file: FDX_API_v6.2.0.zip
+2024-09-05T14:48:54+00:00 API/fdxapi.components.yaml - Merged in feature/pyu-95-v62 (pull request #821)
+2024-09-05T14:48:54+00:00 API/fdxapi.consent.yaml - Merged in feature/pyu-95-v62 (pull request #821)
+2024-09-05T14:48:54+00:00 API/fdxapi.core.yaml - Merged in feature/pyu-95-v62 (pull request #821)
+2024-09-05T15:03:41+05:30 API/fdxapi.customer.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.event-notifications.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.fraud.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.meta.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.money-movement.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.payroll.yaml - Updated version to v6.2.0
+2024-09-05T14:48:54+00:00 API/fdxapi.recipient-registration.yaml - Merged in feature/pyu-95-v62 (pull request #821)
+2024-09-05T15:03:41+05:30 API/fdxapi.registry.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.tax.yaml - Updated version to v6.2.0
+2024-09-05T15:03:41+05:30 API/fdxapi.template.yaml - Updated version to v6.2.0
+
+Creating tools zip file: fdx-tools-v6.2.0.zip
+2024-04-18T15:40:02-05:00 README.md - Delete old zip files, add legal notices to README and tools zip.
+2024-05-03T10:43:05-05:00 bitbucket-pipelines.yml - Start V6.1.0 with updated pipeline and zip script
+2024-02-21T15:52:27-06:00 config/components-yamllint.yaml - Update script and ruleset comments. Create new fdx_xor custom function.
+2024-02-21T15:52:27-06:00 config/core-yamllint.yaml - Update script and ruleset comments. Create new fdx_xor custom function.
+2024-05-08T04:30:11+00:00 config/fdx.spectral.ruleset.yaml - Merged develop into feature/pyu-88-rfc-0300
+2024-02-28T22:39:25-06:00 config/fdx.test.spectral.ruleset.yaml - Attempt new zip file script, polish rule descriptions
+2024-04-24T16:23:57-05:00 config/fdxapi.components.yaml - Removed line for local testing
+2024-02-22T11:20:58-06:00 config/fdxapi.meta.yaml - Improved rules and comments per PR comments
+2024-02-21T15:52:27-06:00 config/functions/fdx_xor.js - Update script and ruleset comments. Create new fdx_xor custom function.
+2024-02-21T15:52:27-06:00 config/functions/fdx_xor.ts - Update script and ruleset comments. Create new fdx_xor custom function.
+2024-02-21T15:52:27-06:00 config/functions/xorSchema.js - Update script and ruleset comments. Create new fdx_xor custom function.
+2024-02-21T15:52:27-06:00 config/functions/xorSchema.ts - Update script and ruleset comments. Create new fdx_xor custom function.
+2024-02-21T15:52:27-06:00 config/yamllint.yaml - Update script and ruleset comments. Create new fdx_xor custom function.
+2022-04-12T12:56:52+00:00 fdxlint.sh - Merged in feature/rfc-0187-debugMessage-error-entity (pull request #612)
+2024-02-21T15:52:27-06:00 lint.sh - Update script and ruleset comments. Create new fdx_xor custom function.
+2023-07-28T10:08:46-06:00 testlint-report.sh - Chmod
+2023-07-28T09:38:56-05:00 testlint.sh - Rename testlint files and update format rule message

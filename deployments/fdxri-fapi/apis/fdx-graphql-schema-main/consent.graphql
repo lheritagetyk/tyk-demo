@@ -1,0 +1,185 @@
+extend type Query {
+    getConsentGrant(consentId: ID!): ConsentGrant
+}
+
+extend type Mutation {
+    revokeConsentGrant(consentId: ID!, consentRevocationRequest: ConsentRevocationRequest!): ID
+}
+
+# Omit ConsentDurationPeriod (use int)
+
+"Current status of Consent Grant"
+enum ConsentGrantStatus {
+    ACTIVE
+    EXPIRED
+    REVOKED
+}
+
+# Omit ConsentId (use builtin ID)
+
+"""
+Resource for which data may be permissioned;
+can be extended to support additional types of resources
+"""
+enum ConsentResourceType {
+    ACCOUNT
+    CUSTOMER
+    DOCUMENT
+}
+
+"Reason for Updating a Consent Grant"
+enum ConsentUpdateReason {
+    BUSINESS_RULE
+    USER_ACTION
+}
+
+"""
+Name of permissioned Data Cluster. For Data Cluster definitions refer
+to the Consent Components > Data Clusters section of the
+User Experience Guidelines document included in the FDX API.
+`ACCOUNT_PAYMENTS` is deprecated and replaced with `PAYMENT_SUPPORT`
+in FDX release V6.1.0, `ACCOUNT_PAYMENTS` will be removed with V7 release
+"""
+enum DataCluster {
+    ACCOUNT_BASIC
+    ACCOUNT_DETAILED
+    ACCOUNT_PAYMENTS @deprecated(reason: "Replace with PAYMENT_SUPPORT")
+    BILLS
+    CUSTOMER_CONTACT
+    CUSTOMER_PERSONAL
+    IMAGES
+    INVESTMENTS
+    NOTIFICATIONS
+    PAYMENT_SUPPORT
+    REWARDS
+    STATEMENTS
+    TAX
+    TRANSACTIONS
+}
+
+# Omit LookbackPeriod (use int)
+
+"Record of user consent"
+type ConsentGrant
+{
+    "The persistent identifier of the consent"
+    id: ID
+
+    "The current status of the consent"
+    status: ConsentGrantStatus
+
+    "The non-end user parties participating in the Consent Grant"
+    parties: [ConsentGrantParty!]
+
+    "When the consent was initially granted"
+    createdTime: DateTime
+
+    "When the consent grant will become expired"
+    expirationTime: DateTime
+
+    "When the consent grant was updated"
+    updatedTime: DateTime
+
+    "The type of duration of the consent"
+    durationType: ConsentDurationType
+
+    "The consent duration in days from day of original grant"
+    durationPeriod: Int
+
+    """
+    Period, in days, for which historical data may be requested;
+    measured from request time, not grant time
+    """
+    lookbackPeriod: Int
+
+    "The permissioned resource entities"
+    resources: [ConsentGrantResource!]
+
+    # Nested from getConsentRevocation
+    revocationList: ConsentRevocationList
+}
+
+"""
+Details on the non-end user parties in the Consent Grant. Includes the
+legal entity operating branded products or services in the data sharing chain.
+Descriptive information is collected during Data Recipient registration at
+Data Provider, and populated during issuance by Data Provider from its registry
+"""
+type ConsentGrantParty implements IParty {
+    name: String!
+    type: PartyType!
+    homeUri: URI!
+    logoUri: URI
+    registry: Registry!
+    registeredEntityName: String!
+    registeredEntityId: String!
+}
+
+"Entity of permissioned resources"
+type ConsentGrantResource {
+    "Type of resource to be permissioned"
+    resourceType: ConsentResourceType!
+    "Identifier of resource to be permissioned"
+    resourceId: ID!
+    "Names of clusters of data elements permissioned"
+    dataClusters: [DataCluster!]!
+}
+
+"Details of request to create new consent grant."
+type ConsentRequest {
+    "The type of duration of the consent"
+    durationType: ConsentDurationType
+
+    "The consent duration in days from day of original grant"
+    durationPeriod: Int
+
+    """
+    Period, in days, for which historical data may be requested;
+    measured from request time, not grant time
+    """
+    lookbackPeriod: Int
+
+    "The requested resource entities"
+    resources: [ConsentRequestedResource!]
+}
+
+"Details of requested resource and data clusters"
+type ConsentRequestedResource {
+    "Type of resource permission requested"
+    resourceType: ConsentResourceType!
+
+    "Names of clusters of data elements requested"
+    dataClusters: [DataCluster!]!
+}
+
+"Details of request to revoke consent grant"
+type ConsentRevocation {
+    "The status of the consent = REVOKED"
+    status: ConsentGrantStatus
+
+    "The reason for consent revocation"
+    reason: ConsentUpdateReason
+
+    "The party initiating consent revocation"
+    initiator: PartyType
+
+    "When the consent grant was revoked"
+    updatedTime: DateTime
+}
+
+"List of consent grant revocation requests"
+type ConsentRevocationList {
+    "The list of revocation requests"
+    revocations: [ConsentRevocation!]
+}
+
+"Details of request to revoke consent grant"
+input ConsentRevocationRequest {
+    "The reason for consent revocation"
+    reason: ConsentUpdateReason
+
+    "The party initiating revocation"
+    initiator: PartyType
+}
+
+# Omit FdxTokenIntrospectionResponse and JwtProfile (descriptive only)

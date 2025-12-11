@@ -1,0 +1,30 @@
+{
+  "Name": "FDX Core API Product",
+  "DisplayName": "",
+  "Description": "",
+  "Feature": false,
+  "IsDocumentationOnly": false,
+  "Logo": "",
+  "Content": "",
+  "ProviderID": 1,
+  "Path": "fdx-api-1",
+  "Catalogues": [1, 2],
+  "AuthType": "jwt",
+  "AuthTypes": ["jwt"],
+  "APIDetails": [
+    {
+      "APIID": "8ef8c11a38b042bf6d0ea1de532e9e69",
+      "APIType": "REST",
+      "Description": "FDX V6.2.0 Core API",
+      "ListenPath": "/fdx",
+      "Name": "FDX V6.2.0 Core API",
+      "OASDocument": "",
+      "OASUrl": "",
+      "Status": true,
+      "TargetURL": "http://fdxri-tomcat:8080/fdxapi"
+    }
+  ],
+  "Preview": "",
+  "SpecDetails": null,
+  "Tags": null
+}

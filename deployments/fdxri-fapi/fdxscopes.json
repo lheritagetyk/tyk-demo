@@ -1,0 +1,133 @@
+[
+  {
+    "name": "openid",
+    "description": "Open banking profile scope",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "false",
+      "consent.screen.text": "Allow this app to read basic account information.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },{
+    "name": "fdx:account.basic:read",
+    "description": "Read basic account metadata (e.g., type, name, nickname)",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to read basic account information.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:account.detail:read",
+    "description": "Read detailed account info (interest rates, credit limits, etc.)",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to view detailed account information.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:transaction:read",
+    "description": "Read account transaction history and pending transactions",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to read your transactions.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:statement:read",
+    "description": "Access account statements in electronic form",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to access your statements.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:payment:write",
+    "description": "Initiate and manage payments (ACH, P2P, bill pay, etc.)",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to initiate payments.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:customer:read",
+    "description": "Read customer profile data (name, email, phone)",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to read your profile information.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:balance:read",
+    "description": "Read current account balance",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to view your account balance.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:metadata:read",
+    "description": "Read product metadata and financial institution information",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to view product and institution information.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:loan:read",
+    "description": "Access details of consumer loans (balance, term, interest)",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to access your loan details.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:investment:read",
+    "description": "Access investment holdings and portfolio details",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to access your investment information.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  },
+  {
+    "name": "fdx:creditreport:read",
+    "description": "Access consumer credit report data",
+    "protocol": "openid-connect",
+    "attributes": {
+      "display.on.consent.screen": "true",
+      "consent.screen.text": "Allow this app to access your credit report.",
+      "include.in.token.scope": "true"
+    },
+    "type": "DEFAULT"
+  }
+]

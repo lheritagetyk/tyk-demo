@@ -1,0 +1,36 @@
+{
+  "policies": [
+    {
+      "name": "fapi2-public-client-policy",
+      "description": "",
+      "enabled": false,
+      "conditions": [
+        {
+          "condition": "any-client",
+          "configuration": {
+            "is-negative-logic": false
+          }
+        }
+      ],
+      "profiles": [
+        "fapi-2-public-profile"
+      ]
+    },
+    {
+      "name": "fapi-2-security-policy",
+      "description": "For confidential Client",
+      "enabled": false,
+      "conditions": [
+        {
+          "condition": "any-client",
+          "configuration": {
+            "is-negative-logic": false
+          }
+        }
+      ],
+      "profiles": [
+        "fapi-2-security-profile"
+      ]
+    }
+  ]
+}

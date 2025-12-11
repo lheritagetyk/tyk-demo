@@ -1,0 +1,44 @@
+{
+  "Name": "UK and FDX Core- FAPI Product",
+  "DisplayName": "",
+  "Description": "",
+  "Feature": false,
+  "IsDocumentationOnly": false,
+  "Logo": "",
+  "Content": "",
+  "ProviderID": 1,
+  "Path": "fdxanduk-api-1",
+  "Catalogues": [1, 2],
+  "AuthType": "jwt",
+  "AuthTypes": ["jwt"],
+  "DCREnabled": true,
+  "Scopes": "fdx:account.basic:read",
+  "Templates": ["FDX End User"],
+  "APIDetails": [
+    {
+      "APIID": "8ef8c11a38b042bf6d0ea1de532e9e70",
+      "APIType": "REST",
+      "Description": "FDX V6.2.0 Core FAPI API",
+      "ListenPath": "/fdxfapi",
+      "Name": "FDX V6.2.0 Core FAPI API",
+      "OASDocument": "",
+      "OASUrl": "",
+      "Status": true,
+      "TargetURL": "http://fdxri-tomcat:8080/fdxapi"
+    },
+    {
+        "APIID": "e870705d6524473946b31abf377bbf0a",
+        "APIType": "REST",
+        "Description": "Account and Transaction API Specification",
+        "ListenPath": "/account-information",
+        "Name": "Account and Transaction API Specification",
+        "OASDocument": "",
+        "OASUrl": "",
+        "Status": true,
+        "TargetURL": "http://host.docker.internal:3001"
+      }
+  ],
+  "Preview": "",
+  "SpecDetails": null,
+  "Tags": null
+}

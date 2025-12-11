@@ -1,0 +1,26 @@
+extend type Query {
+    searchForRegistryRecipients(pagination: Pagination): RegistryRecipients! # Renamed from getRegistryRecipients
+    getRegistryRecipient(recipientId: ID): RegistryRecipient
+
+}
+
+type RegistryRecipient implements IRecipientRequest {
+    recipientId: ID!
+    clientName: String!
+    description: String
+    redirectUris: [URI!]!
+    logoUri: URI
+    clientUri: URI
+    contacts: [String!]
+    scope: String
+    durationType: [ConsentDurationType!]
+    durationPeriod: Int
+    lookbackPeriod: Int
+    registryReferences: [RegistryReference!]
+    intermediaries: [Intermediary!]
+}
+
+type RegistryRecipients implements PaginatedArray {
+    page: PageMetadata
+    recipients: [RegistryRecipient!]!
+}

@@ -1,0 +1,513 @@
+openapi: 3.1.0
+info:
+  version: '6.2.0'
+  title: FDX V6.2.0 Payroll API
+  description: Financial Data Exchange V6.2.0 Payroll API
+  contact:
+    name: Financial Data Exchange
+    url: 'https://financialdataexchange.org/'
+    email: fdxsupport@financialdataexchange.org
+  license:
+    name: FDX API License Agreement (11-13-2019)
+    url: 'https://financialdataexchange.org/common/Uploaded%20files/Policies/FDX%20API%20License%20Agreement-(11-13-2019).pdf'
+servers:
+  - url: 'https://api.fi.com/fdx/v6'
+    description: Financial Data Exchange V6 Payroll API
+tags:
+  - name: Payroll Information
+    description: Verify employment and/or income
+
+paths:
+  ############################################################
+  #
+  # Payroll paths
+  #
+  ############################################################
+
+  /payroll/reports:
+    parameters:
+      - $ref: './fdxapi.components.yaml#/components/parameters/FapiInteractionIdHeader'
+      - $ref: './fdxapi.components.yaml#/components/parameters/FdxApiActorTypeHeader'
+    get:
+      operationId: getPayrollReports
+      tags:
+        - Payroll Information
+      description: Search for the employee's latest payroll report
+      summary: Search for a payroll report
+      parameters:
+        - $ref: './fdxapi.components.yaml#/components/parameters/ResultTypeQuery'
+        - $ref: '#/components/parameters/ReportTypeQuery'
+      responses:
+        '200':
+          description: List of payroll reports available
+          headers:
+            x-fapi-interaction-id:
+              $ref: './fdxapi.components.yaml#/components/headers/x-fapi-interaction-id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollReportList'
+        '400':
+          $ref: './fdxapi.components.yaml#/components/responses/400'
+        '401':
+          $ref: './fdxapi.components.yaml#/components/responses/401'
+        '404':
+          $ref: './fdxapi.components.yaml#/components/responses/404'
+        '500':
+          $ref: './fdxapi.components.yaml#/components/responses/500'
+        '501':
+          $ref: './fdxapi.components.yaml#/components/responses/501'
+        '503':
+          $ref: './fdxapi.components.yaml#/components/responses/503'
+
+  /payroll/reports/{reportId}:
+    parameters:
+      - $ref: '#/components/parameters/ReportIdPath'
+      - $ref: './fdxapi.components.yaml#/components/parameters/FapiInteractionIdHeader'
+      - $ref: './fdxapi.components.yaml#/components/parameters/FdxApiActorTypeHeader'
+    get:
+      operationId: getPayrollReport
+      tags:
+        - Payroll Information
+      description: Retrieve the employee's specified payroll report
+      summary: Payroll Report detail
+      responses:
+        '200':
+          description: Details of the specific payroll report
+          headers:
+            x-fapi-interaction-id:
+              $ref: './fdxapi.components.yaml#/components/headers/x-fapi-interaction-id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollReport'
+        '400':
+          description: Required input data not sent
+          headers:
+            x-fapi-interaction-id:
+              $ref: './fdxapi.components.yaml#/components/headers/x-fapi-interaction-id'
+          content:
+            application/json:
+              schema:
+                $ref: './fdxapi.components.yaml#/components/schemas/Error'
+              examples:
+                Invalid Input:
+                  value:
+                    code: '401'
+                    message: Report ID is required
+                    debugMessage: Custom developer-level error details for troubleshooting
+        '404':
+          description: Payroll Report with provided ID was not found
+          headers:
+            x-fapi-interaction-id:
+              $ref: './fdxapi.components.yaml#/components/headers/x-fapi-interaction-id'
+          content:
+            application/json:
+              schema:
+                $ref: './fdxapi.components.yaml#/components/schemas/Error'
+              examples:
+                Resource not found:
+                  value:
+                    code: '800'
+                    message: Payroll Report not found
+                    debugMessage: Custom developer-level error details for troubleshooting
+        '500':
+          $ref: './fdxapi.components.yaml#/components/responses/500'
+        '501':
+          $ref: './fdxapi.components.yaml#/components/responses/501'
+        '503':
+          $ref: './fdxapi.components.yaml#/components/responses/503'
+
+components:
+
+  securitySchemes:
+    ############################################################
+    #
+    # Security Schemes
+    #
+    ############################################################
+
+    OAuthFapi1Advanced:
+      $ref: './fdxapi.components.yaml#/components/securitySchemes/OAuthFapi1Advanced'
+
+  parameters:
+    ############################################################
+    #
+    # Payroll parameters
+    #
+    ############################################################
+
+    ReportIdPath:
+      name: reportId
+      in: path
+      description: Specific reportId to retrieve
+      required: true
+      schema:
+        $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+
+    ReportTypeQuery:
+      name: reportType
+      in: query
+      description: Whether to retrieve Verification of Employment ("VOE")
+        or Verification of Income and Employment ("VOIE") reports
+      required: true
+      schema:
+        $ref: '#/components/schemas/PayrollReportType'
+
+  schemas:
+    ############################################################
+    #
+    # Payroll data entities
+    #
+    ############################################################
+
+    BasePayroll:
+      title: Base Payroll Rate
+      description: Provides a person's base pay rate
+      type: object
+      properties:
+        rate:
+          description: The amount and currency of the base pay rate of employee
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        rateType:
+          description: Whether the worker's rate is ANNUAL, DAILY, HOURLY, OTHER
+          $ref: '#/components/schemas/PayrollRateType'
+      required:
+        - rate
+        - rateType
+
+    Employee:
+      title: Employee entity
+      description: Represents an employee
+      type: object
+      allOf:
+        - $ref: './fdxapi.components.yaml#/components/schemas/Person'
+        - type: object
+          properties:
+            employeeId:
+              description: Provider's long-term persistent id for the employee
+              $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+            name:
+              description: Employee's full name
+              $ref: './fdxapi.components.yaml#/components/schemas/IndividualName'
+      required:
+        - name
+
+    Employer:
+      title: Employer entity
+      description: Represents an employer
+      type: object
+      properties:
+        employerId:
+          description: Provider's long-term persistent id for the employer
+          $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+        name:
+          description: The employer's name
+          $ref: './fdxapi.components.yaml#/components/schemas/BusinessName'
+        dbas:
+          description: Array of Doing Business As names for this employer
+          type: array
+          items:
+            type: string
+        taxId:
+          description: Country specific Tax Id associated with this employer (FEIN in USA or BN in Canada)
+          type: string
+        taxIdCountry:
+          description: Country originating the employer's taxId element
+          $ref: './fdxapi.components.yaml#/components/schemas/Iso3166CountryCode'
+        contacts:
+          description: Employer's various contact information
+          $ref: './fdxapi.components.yaml#/components/schemas/Contacts'
+      required:
+        - name
+
+    Employment:
+      title: Employment
+      description: Provides a person's employment details
+      type: object
+      properties:
+        employer:
+          description: The employer for the job/position
+          $ref: '#/components/schemas/Employer'
+        jobTitle:
+          description: The title of the job/position
+          type: string
+        originalHireDate:
+          description: The date when employee joined for the first time.
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        mostRecentHireDate:
+          description: The date when employee re-joined most recently.
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        endDate:
+          description: The employment end date
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        status:
+          description: The employee's employment status, ACTIVE or INACTIVE
+          $ref: '#/components/schemas/ActiveStatus'
+        supplementalStatus:
+          description: Supplemental detail of employee's employment status
+          $ref: '#/components/schemas/SupplementalStatus'
+        type:
+          description: The employee's employment type,
+            CONTRACTED, FULL-TIME, OTHER, PART-TIME, SEASONAL, TEMPORARY
+          $ref: '#/components/schemas/EmploymentType'
+      required:
+        - employer
+        - status
+
+    GrossPay:
+      title: Payment Amounts
+      description: Year to date amounts for current and previous years
+      type: object
+      properties:
+        total:
+          description: Total gross pay for covered period
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        base:
+          description: Base pay part of Gross pay for covered period
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        bonus:
+          description: Bonus pay for covered period
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        commission:
+          description: Commission for covered period
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        overtime:
+          description: Overtime pay for covered period
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        otherEarnings:
+          description: Other earnings received in covered period
+          type: array
+          items:
+            $ref: '#/components/schemas/OtherAmount'
+      required:
+        - total
+
+    Income:
+      title: Income
+      description: Provides a person's employment income details.
+        Applicable only for VOIE (Verification of Income and Employment) data retrieval
+      type: object
+      properties:
+        baseRate:
+          description: The employee's base payroll rate
+          $ref: '#/components/schemas/BasePayroll'
+        payrollFrequency:
+          description: The frequency of payments
+          $ref: '#/components/schemas/PayrollFrequency'
+        latestPayDate:
+          description: The date of employee's most recent pay
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        latestPayPeriodEndDate:
+          description: The end date of employee's most recent pay period
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        annualPay:
+          description: Year-to-date pay for current year and total annual pay for previous years
+          $ref: '#/components/schemas/PaymentAmounts'
+      required:
+        - payrollFrequency
+
+    OtherAmount:
+      title: Other Monetary Amount
+      description: A monetary amount with its source name and its currency code
+      type: object
+      allOf:
+        - $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+        - type: object
+          properties:
+            name:
+              description: The source name of this monetary amount
+              type: string
+
+    PaymentAmounts:
+      title: Payment Amounts
+      description: Year to date amounts for current and previous years
+      type: object
+      properties:
+        year:
+          description: The year in which this income was earned
+          type: integer
+        grossPay:
+          description: Gross pay for covered period
+          $ref: '#/components/schemas/GrossPay'
+        netPay:
+          description: Net pay for covered period
+          $ref: './fdxapi.components.yaml#/components/schemas/MonetaryAmount'
+      required:
+        - year
+        - grossPay
+
+    PayrollReport:
+      title: Payroll Report entity
+      description: An employee's Payroll Report
+      type: object
+      properties:
+        reportId:
+          description: The report identification number
+          $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+        reportType:
+          description: The type of report
+          $ref: '#/components/schemas/PayrollReportType'
+        generationDate:
+          description: The generation date of the report
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        dataAsOf:
+          description: The data in the report is as of this date.
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        employee:
+          description: The employee
+          $ref: '#/components/schemas/Employee'
+        employment:
+          description: The employee's employment
+          $ref: '#/components/schemas/Employment'
+        incomes:
+          description: The employee's year to date income amounts for current and previous years
+            omitted for Verification of Employment requests (VOE),
+            included for Verification of Income and Employment requests (VOI / VOIE)
+          type: array
+          items:
+            $ref: '#/components/schemas/Income'
+        links:
+          $ref: './fdxapi.components.yaml#/components/schemas/HateoasLinks'
+          description: Links to retrieve this payroll report, or to invoke related APIs
+      required:
+        - reportId
+        - reportType
+        - generationDate
+        - employee
+        - employment
+
+    PayrollReportList:
+      title: Payroll Report List entity
+      description: Response object for /payroll/report API with list of reports available
+      type: object
+      properties:
+        summaries:
+          description: Zero or more PayrollReportSummaries for lightweight response
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollReportSummary'
+        reports:
+          description: Zero or more PayrollReports, for details response
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollReport'
+
+    PayrollReportSummary:
+      title: Payroll Report Summary entity
+      description: The list of payroll reports for an employee
+      type: object
+      properties:
+        reportId:
+          description: The report identification number
+          $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+        reportType:
+          description: The type of report
+          $ref: '#/components/schemas/PayrollReportType'
+        generationDate:
+          description: The generation date of the report
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        dataAsOf:
+          description: The data in the report is as of this date.
+          $ref: './fdxapi.components.yaml#/components/schemas/DateString'
+        employeeId:
+          description: Provider's long-term persistent id for the employee
+          $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+        employeeName:
+          description: Employee's full name
+          $ref: './fdxapi.components.yaml#/components/schemas/IndividualName'
+        employerId:
+          description: The employer for this report
+          $ref: './fdxapi.components.yaml#/components/schemas/Identifier'
+        employerName:
+          description: The employer's name
+          $ref: './fdxapi.components.yaml#/components/schemas/BusinessName'
+        links:
+          $ref: './fdxapi.components.yaml#/components/schemas/HateoasLinks'
+          description: Links to retrieve this payroll report, or to invoke related APIs
+      required:
+        - reportId
+        - reportType
+        - generationDate
+        - employeeName
+        - employerName
+
+    ############################################################
+    #
+    # Payroll data types
+    #
+    ############################################################
+
+    ActiveStatus:
+      title: Active/Inactive Status
+      description: Specifies the employment status of ACTIVE or INACTIVE
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+
+    EmploymentType:
+      title: Employment type
+      description: Specifies the employment type, such as
+        CONTRACTED, FULL-TIME, OTHER, PART-TIME, SEASONAL, TEMPORARY
+      type: string
+      enum:
+        - CONTRACTED
+        - FULL_TIME
+        - OTHER
+        - PART_TIME
+        - SEASONAL
+        - TEMPORARY
+
+    PayrollFrequency:
+      title: Payroll Frequency type
+      description: The frequency of employee payments
+      type: string
+      enum:
+        - ANNUALLY
+        - BI_WEEKLY
+        - DAILY
+        - EVERY_2_6_WEEKS
+        - EVERY_4_WEEKS
+        - EVERY_5_2_WEEKS
+        - MONTHLY
+        - QUARTERLY
+        - SEMI_ANNUALLY
+        - SEMI_MONTHLY
+        - WEEKLY
+
+    PayrollRateType:
+      title: Payroll Rate Type
+      description: Specifies whether the employee's pay is
+        ANNUAL, DAILY, HOURLY, OTHER
+      type: string
+      enum:
+        - ANNUAL
+        - DAILY
+        - HOURLY
+        - OTHER
+
+    PayrollReportType:
+      title: Payroll Report Type
+      description: The type of payroll report,
+        VOE - for Verification of Employment,
+        VOIE - for Verification of Income and Employment
+      type: string
+      enum:
+        - VOE
+        - VOIE
+
+    SupplementalStatus:
+      title: Supplemental Status
+      description: Additional information about ACTIVE/INACTIVE employment status
+      type: string
+      enum:
+        - FURLOUGHED
+        - LEAVE
+        - MEDICAL_LEAVE
+        - MILITARY_LEAVE
+        - PATERNITY_LEAVE
+        - QUIT
+        - RETIRED
+        - TERMINATED
+        - VACATION

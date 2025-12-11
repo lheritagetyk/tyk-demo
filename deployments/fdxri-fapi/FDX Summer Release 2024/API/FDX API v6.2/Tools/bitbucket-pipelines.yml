@@ -1,0 +1,108 @@
+##################################################################
+#
+# The repository pipeline build uses FDX Docker images defined at
+# fdxdockerhub/fdx-lint-spectral, which contain yamllint and spectral tools used by scripts below.
+#
+# See https://hub.docker.com/r/fdxdockerhub/fdx-lint-spectral for more information and all the available tags.
+# (A tag with 'lts' means it uses the Long Term Support version of node, current version 20.)
+#
+##################################################################
+#
+# Use slim image with node version 20 (lts)
+image: fdxdockerhub/fdx-lint-spectral:lts-slim
+
+pipelines:
+
+  custom:
+
+    yaml-validation:
+
+      - step:
+          name: Validate the yaml and write output to console
+          script:
+            - ./lint.sh
+            - ./testlint.sh fdxapi.components.yaml
+            - ./testlint.sh fdxapi.meta.yaml
+
+    metrics-and-zips:
+
+      - step:
+          name: Execute the metrics and zip file scripts and write outputs to console
+          script:
+            - ./metrics/fdx_api_lines.sh
+            - ./metrics/fdx_api_schemas.sh
+            - ./metrics/fdx_rules.sh
+
+            - ./zip_files.sh
+
+  branches:
+
+    '{develop,release/*}':
+
+      - step:
+          name: Validate the yaml and save output in API/reports files
+          script:
+            - spectral --version  # Print the version of Spectral
+            - echo "--- Set up for check in of report files ---"
+            - git status
+            - git checkout -b feature/build-${BITBUCKET_BUILD_NUMBER}
+            - echo ${BITBUCKET_BUILD_NUMBER} > build_number.txt
+
+            - ./fdxlint.sh fdxapi.components.yaml
+            - ./fdxlint.sh fdxapi.consent.yaml
+            - ./fdxlint.sh fdxapi.core.yaml
+            - ./fdxlint.sh fdxapi.customer.yaml
+            - ./fdxlint.sh fdxapi.event-notifications.yaml
+            - ./fdxlint.sh fdxapi.fraud.yaml
+            - ./fdxlint.sh fdxapi.meta.yaml
+            - ./fdxlint.sh fdxapi.money-movement.yaml
+            - ./fdxlint.sh fdxapi.payroll.yaml
+            - ./fdxlint.sh fdxapi.recipient-registration.yaml
+            - ./fdxlint.sh fdxapi.registry.yaml
+            - ./fdxlint.sh fdxapi.tax.yaml
+            - ./fdxlint.sh fdxapi.template.yaml
+
+            # Write metrics counts to build files to observe changes
+            # Results have to be manually added to release files
+            - ./metrics/fdx_api_lines.sh
+            - ./metrics/fdx_api_schemas.sh
+            - ./metrics/fdx_rules.sh
+
+            # The spectral ruleset is also run against two test files
+            #   * config/fdxapi.components.yaml and
+            #   * config/fdxapi.meta.yaml,
+            # which have been modified to have every possible rule
+            # violation of the FDX-specific rules. This will run
+            # with every pipeline build and a sudden change in these
+            # violations being reported will give us an indication
+            # that overall validation itself may be having issues.
+            - ./testlint-report.sh fdxapi.components.yaml
+            - ./testlint-report.sh fdxapi.meta.yaml
+
+            # Create the FDX API and validation tools zip files
+            - ./zip_files.sh
+
+            - echo "--- Commit report files ---"
+            - git add API/.
+            - git add metrics/.
+            - git add -f *.zip
+            - git add *.txt
+            - git status
+            - git commit -m "[skip ci] Add report, metrics, zip files"
+            - git push origin feature/build-${BITBUCKET_BUILD_NUMBER}
+
+    '{feature/*}':
+
+      - step:
+          name: Validate the yaml, count metrics and write outputs to console
+          script:
+            - ./lint.sh
+
+            # Write metrics counts to output to validate scripts succeed
+            - ./metrics/metrics_lines.sh
+            - ./metrics/metrics_schemas.sh
+            - ./metrics/rule_metrics.sh
+
+            # Commenting out these two lines for feature commits, since they always intentionally error
+            # - ./testlint.sh fdxapi.components.yaml
+            # - ./testlint.sh fdxapi.meta.yaml

@@ -1,0 +1,527 @@
+extend type Query {
+    searchForPayees(pagination: Pagination): Payees!
+    getPayee(payeeId: ID): Payee
+    searchForPaymentInitiationParties(pagination: Pagination): PaymentInitiationParties! # Fix name from listPaymentInitiationParties
+    getPaymentInitiationParty(paymentInitiationPartyId: ID): PaymentInitiationParty
+    # Omit getPaymentMethod (nested)
+    searchForPayments(pagination: Pagination): Payments!
+    getPayment(paymentId: ID): Payment
+    searchForRecurringPayments(pagination: Pagination): RecurringPayments!
+    getRecurringPayment(recurringPaymentId: ID): RecurringPayment
+    # Omit getPaymentsForRecurringPayment (nested)
+    searchForTransfers(pagination: Pagination, startDate: Date, endDate: Date, fromAccountIds: [ID!], toAccountIds: [ID!], statuses: [PaymentStatus!]): Transfers
+    getTransfer(transferId: ID): Transfer
+}
+
+extend type Mutation {
+    createPayee(payee: PayeeForUpdate): Payee
+    updatePayee(payeeId: ID, payee: PayeeForUpdate): Payee
+    deletePayee(payeeId: ID): Payee
+    createPaymentInitiationParty(party: PaymentInitiationPartyInput): PaymentInitiationParty
+    updatePaymentInitiationParty(paymentInitiationPartyId: ID, party: PaymentInitiationPartyInput): PaymentInitiationParty
+    deletePaymentInitiationParty(paymentInitiationPartyId: ID): PaymentInitiationParty
+    createPaymentMethod(paymentMethod: PaymentInitiationPartyToPaymentMethodInput): PaymentMethod
+    updatePaymentMethodRegistration(paymentInitiationPartyId: ID, paymentMethodRegistrationId: ID, paymentMethodRegistration: PaymentInitiationPartyToPaymentMethodInput): PaymentInitiationPartyToPaymentMethod
+    deletePaymentMethodRegistration(paymentInitiationPartyId: ID, paymentMethodRegistrationId: ID): PaymentInitiationPartyToPaymentMethod
+    schedulePayment(payment: PaymentForUpdate): Payment
+    updatePayment(paymentId: ID, payment: PaymentForUpdate): Payment
+    cancelPayment(paymentId: ID): Payment
+    scheduleRecurringPayment(recurringPayment: RecurringPaymentForUpdate): RecurringPayment
+    updateRecurringPayment(recurringPaymentId: ID, recurringPayment: RecurringPaymentForUpdate): RecurringPayment
+    cancelRecurringPayment(recurringPaymentId: ID): RecurringPayment
+    cancelTransfer(transferId: ID): Transfer
+}
+
+union AccountIdentifier = IBAN2007Identifier | GenericAccountIdentification
+input AccountIdentifierInput {
+    ian2007Id: String
+    accountId: ID
+    issuerName: String
+    idScheme: AccountIdSchemeInput
+}
+union AccountIdScheme = ExternalAccountIdScheme | ProprietaryAccountIdScheme
+input AccountIdSchemeInput {
+    idCode: String
+    proprietaryName: String
+}
+"""
+[ISO 9362:2014](https://www.swift.com/standards/data-standards/bic-business-identifier-code)
+Business Identifier Code for Financial Institutions
+(see [whitepaper](https://www.swift.com/swift-resource/14256/download))
+Deprecated and superseded by `Iso9362BusinessIdCode2022` (ISO 9362:2022). BICFIDec2014Identifier will be
+removed after multi-year transition from 9362:2014, expected to end by or before EOY 2026
+"""
+type BICFIDec2014Identifier {
+    bicFiDec2014Id: String @deprecated
+}
+type Branch {
+    branchId: String
+    name: String
+    locations: [PaymentDeliveryAddress!]
+    financialInstitution: FinancialInstitution
+}
+input BranchInput {
+    branchId: String
+    name: String
+    locations: [PaymentDeliveryAddressInput!]
+    financialInstitution: FinancialInstitutionInput
+}
+type DirectDeposit {
+    directDepositId: ID
+    registrationTypeCode: String
+}
+input DirectDepositInput {
+    directDepositId: ID
+    registrationTypeCode: String
+}
+type ElectronicAddress {
+    emailAddressText: String
+}
+type ExternalAccountIdScheme {
+    idCode: String
+}
+type ExternalFinancialInstitutionIdScheme {
+    idCode: String
+}
+type FinancialInstitution {
+    name: String
+    fiId: FinancialInstitutionId
+}
+input FinancialInstitutionInput {
+    name: String
+    fiId: FinancialInstitutionIdInput
+}
+union FinancialInstitutionId = BICFIDec2014Identifier | GenericFinancialInstitutionId | Iso9362BusinessIdCode2022
+input FinancialInstitutionIdInput {
+    bicFiDec2014Id: String @deprecated
+    fiId: ID
+    issuerName: String
+    idScheme: FinancialInstitutionIdSchemeInput
+    businessIdCode2022: String @length(max: 11)
+}
+union FinancialInstitutionIdScheme = ExternalFinancialInstitutionIdScheme | ProprietaryFinancialInstitutionIdScheme
+input FinancialInstitutionIdSchemeInput {
+    idCode: String
+    name: String
+}
+type GenericAccountIdentification {
+    accountId: ID
+    issuerName: String
+    idScheme: AccountIdScheme
+}
+type GenericFinancialInstitutionId {
+    fiId: ID
+    issuerName: String
+    idScheme: FinancialInstitutionIdScheme
+}
+type GovernmentIssuedPartyIdentification {
+    idNumber: String
+    issuedDate: Date
+    expiryDate: Date
+    type: GovernmentIssuedIdType
+    issuingCountry: CountryCode
+}
+input GovernmentIssuedPartyIdentificationInput {
+    idNumber: String
+    issuedDate: Date
+    expiryDate: Date
+    type: GovernmentIssuedIdType
+    issuingCountry: CountryCode
+}
+type IBAN2007Identifier {
+    ian2007Id: String
+}
+"""
+[ISO 9362:2022](https://www.iso.org/standard/84108.html)
+Business Identifier Code for Financial Institutions
+(see [whitepaper](https://www.swift.com/swift-resource/14256/download)), supersedes ISO 9362:2014
+"""
+type Iso9362BusinessIdCode2022 {
+    businessIdCode2022: String @length(max: 11)
+}
+type Merchant {
+    displayName: String
+    name: CustomerName
+    address: DeliveryAddress
+    phone: TelephoneNumber
+    merchantAccountIds: [String!]
+    payeeId: ID # Why is this not on Payee?
+    status: PartyStatus
+    expiresTimestamp: DateTime
+}
+"""
+Merchant's primary demographic information; name, location, contact phone.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+input MerchantForUpdate {
+    displayName: String
+    name: CustomerNameInput
+    address: DeliveryAddressInput
+    phone: TelephoneNumberInput
+    merchantAccountIds: [String!]
+}
+"""
+Logical grouping of name attributes that are particular to
+an Organization type of payment initiation party.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+type OrganizationName {
+    companyName: String
+}
+union OrganizationOrIndividualName = OrganizationName | IndividualName
+input OrganizationOrIndividualNameInput {
+    companyName: String
+
+    "First name"
+    first: String
+
+    "Middle initial"
+    middle: String
+
+    "Last name"
+    last: String
+
+    "Generational or academic suffix"
+    suffix: String
+}
+type PartyGroup {
+    groupId: ID
+    name: String
+}
+input PartyGroupInput {
+    groupId: ID
+    name: String
+}
+type Payee {
+    merchant: Merchant!
+}
+input PayeeForUpdate {
+    merchant: MerchantForUpdate!
+}
+type Payees implements PaginatedArray {
+    page: PageMetadata
+    payees: [Payee!]!
+}
+type Payment {
+    paymentId: ID!
+    recurringPayment: RecurringPayment
+    fromAccount: Account!
+    toPayee: Payee!
+    amount: Float! @bounds(min: 0)
+    merchantAccountId: String
+    dueDate: Date!
+    scheduledTimestamp: DateTime
+    processedTimestamp: DateTime
+    failedTimestamp: DateTime
+    cancelledTimestamp: DateTime
+    startedProcessingTimestamp: DateTime
+    status: PaymentStatus
+    # Omit links
+}
+input PaymentForUpdate {
+    fromAccountId: ID!
+    toPayeeId: ID!
+    amount: Float! @bounds(min: 0)
+    merchantAccountId: String
+    dueDate: Date!
+}
+type PaymentDeliveryAddress {
+    type: DeliveryAddressType
+    address: VirtualOrPhysicalAddress # TODO better naming
+}
+input PaymentDeliveryAddressInput {
+    type: DeliveryAddressType
+    address: VirtualOrPhysicalAddressInput # TODO better naming
+}
+type PaymentGenericAccount {
+    accountNumber: String
+    accountType: AccountType
+    name: String
+    currencyCode: CurrencyCode
+    id: AccountIdentifier
+    branch: Branch
+}
+input PaymentGenericAccountInput {
+    accountNumber: String
+    accountType: AccountType
+    name: String
+    currencyCode: CurrencyCode
+    id: AccountIdentifierInput
+    branch: BranchInput
+}
+type PaymentInitiationParties implements PaginatedArray {
+    page: PageMetadata
+    paymentInitiationParties: PaymentInitiationParty # No summaries!
+}
+type PaymentInitiationParty implements IParty {
+    paymentInitiationPartyId: ID
+    name: String!
+    type: PartyType!
+    homeUri: URI
+    logoUri: URI
+    registry: Registry
+    registeredEntityName: String
+    registeredEntityId: String
+    partyGroups: [PartyGroup]
+    paymentInitiationPartyName: PaymentInitiationPartyName
+    governmentIssuedPartyIds: [GovernmentIssuedPartyIdentification!]
+    paymentMethods: [PaymentInitiationPartyToPaymentMethod!]
+    paymentMethod(paymentMethodId: ID): PaymentInitiationPartyToPaymentMethod
+    locations: [PaymentDeliveryAddress!]
+    expiresTimestamp: DateTime
+    status: PartyStatus
+    contactPreferences: [PaymentInitiationPartyContactMethod!]
+}
+
+input PaymentInitiationPartyInput {
+    paymentInitiationPartyId: ID
+    name: String!
+    type: PartyType!
+    homeUri: URI
+    logoUri: URI
+    registry: Registry
+    registeredEntityName: String
+    registeredEntityId: String
+    partyGroups: [PartyGroupInput]
+    paymentInitiationPartyName: PaymentInitiationPartyNameInput
+    governmentIssuedPartyIds: [GovernmentIssuedPartyIdentificationInput!]
+    paymentMethods: [PaymentInitiationPartyToPaymentMethodInput!]
+    locations: [PaymentDeliveryAddressInput!]
+    expiresTimestamp: DateTime
+    status: PartyStatus
+    contactPreferences: [PaymentInitiationPartyContactMethodInput!]
+}
+type PaymentInitiationPartyContactMethod {
+    type: ContactPreferencesType
+    address: VirtualOrPhysicalAddress
+}
+input PaymentInitiationPartyContactMethodInput {
+    type: ContactPreferencesType
+    address: VirtualOrPhysicalAddressInput
+}
+
+"""
+Generic entity that stores various names associated with a payment initiation party.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+type PaymentInitiationPartyName {
+    aliasName: String
+    detail: OrganizationOrIndividualName
+}
+"""
+Generic entity that stores various names associated with a payment initiation party.
+Japanese participants should send 'Kana' values in name fields using the
+character set defined by Zengin (Japanese Banks' Payment Clearing Network)
+"""
+input PaymentInitiationPartyNameInput {
+    aliasName: String
+    detail: OrganizationOrIndividualNameInput
+}
+type PaymentInitiationPartyToPaymentMethod {
+    registrationId: ID
+    paymentMethod: PaymentMethod
+    account: PaymentMethodAccount
+    locations: [PaymentDeliveryAddress!]
+}
+input PaymentInitiationPartyToPaymentMethodInput {
+    registrationId: ID
+    paymentMethod: PaymentMethodInput
+    account: PaymentMethodAccountInput
+    locations: [PaymentDeliveryAddressInput!]
+}
+interface PaymentMethod {
+    paymentMethodId: String
+    externalLocalInstrument1Code: String
+
+}
+input PaymentMethodInput {
+    paymentMethodId: String
+    externalLocalInstrument1Code: String
+    directDeposit: DirectDepositInput
+    sourceAccount: PaymentGenericAccountInput
+    destinationAccount: PaymentGenericAccountInput
+}
+interface PaymentMethodAccount {
+    accountRegistrationId: ID
+}
+input PaymentMethodAccountInput {
+
+    accountRegistrationId: ID
+    directDeposit: DirectDepositInput
+    destinationAccount: PaymentGenericAccountInput
+    sendingAccount: PaymentGenericAccountInput
+}
+type PaymentMethodCreditAccount implements PaymentMethodAccount {
+    accountRegistrationId: ID
+    directDeposit: DirectDeposit
+    destinationAccount: PaymentGenericAccount
+}
+type PaymentMethodDebitAccount implements PaymentMethodAccount {
+    accountRegistrationId: ID
+    sendingAccount: PaymentGenericAccount
+}
+type PaymentMethodSystemCode implements PaymentMethod {
+    paymentMethodId: String
+    externalLocalInstrument1Code: String
+    externalClearingSystemIdentification1Code: String
+}
+type PaymentMethodProprietary implements PaymentMethod {
+    paymentMethodId: String
+    externalLocalInstrument1Code: String
+    externalClearingSystemIdentification1Proprietary: String
+}
+type Payments implements PaginatedArray {
+    page: PageMetadata
+    payments: [Payment!]!
+}
+type ProprietaryAccountIdScheme {
+    proprietaryName: String
+}
+type ProprietaryFinancialInstitutionIdScheme {
+    name: String
+}
+type RecurringPayment {
+    recurringPaymentId: ID
+    frequency: RecurringPaymentFrequency!
+    duration: RecurringPaymentDuration
+    fromAccount: Account!
+    toPayee: Payee!
+    amount: Float! @bounds(min: 0)
+    merchantAccountId: String
+    dueDate: Date!
+    scheduledTimestamp: DateTime
+    cancelledTimestamp: DateTime
+    processedTimestamp: DateTime
+    failedTimestamp: DateTime
+    status: RecurringPaymentStatus!
+    payments(pagination: Pagination): Payments!
+    payment(recurringPaymentId: ID): RecurringPayment
+}
+type RecurringPaymentDuration {
+    type: RecurringPaymentDurationType!
+    numberOfTimes: Float
+}
+input RecurringPaymentDurationInput {
+    type: RecurringPaymentDurationType!
+    numberOfTimes: Float
+}
+input RecurringPaymentForUpdate {
+    frequency: RecurringPaymentFrequency!
+    duration: RecurringPaymentDurationInput
+    fromAccountId: ID!
+    toPayeeId: ID!
+    amount: Float! @bounds(min: 0)
+    merchantAccountId: String
+    dueDate: Date!
+}
+type RecurringPayments implements PaginatedArray {
+    page: PageMetadata
+    recurringPayments: [RecurringPayment!]!
+}
+type Transfer {
+    transferID: ID
+    fromAccount: Account
+    toAccount: Account
+    amount: Float
+    memo: String @length(max: 255)
+    paymentDetails: PaymentDetails
+    referenceId: ID
+    status: PaymentStatus
+    transferTime: DateTime
+}
+input TransferForCreate {
+    transferID: ID
+    fromAccountId: ID
+    toAccountId: ID
+    amount: Float
+    memo: String @length(max: 255)
+    paymentDetails: PaymentDetailsInput
+}
+type Transfers implements PaginatedArray {
+    page: PageMetadata
+    transfers: [Transfer!]!
+}
+union VirtualOrPhysicalAddress = ElectronicAddress | DeliveryAddress | TelephoneNumber
+input VirtualOrPhysicalAddressInput {
+    # ElectronicAddress
+    emailAddressText: String
+
+    # DeliveryAddress
+
+    "Address line 1"
+    line1: String @length(max: 64)
+
+    "Address line 2"
+    line2: String @length(max: 64)
+
+    "Address line 3"
+    line3: String @length(max: 64)
+
+    "City"
+    city: String @length(max: 64)
+
+    region: Region
+
+    postalCode: PostalCode
+
+    country: CountryCode
+
+    "Type of address location. One of BUSINESS, DELIVERY, HOME, MAILING"
+    deliveryAddressType: DeliveryAddressType
+
+    # TelephoneNumber
+    TelephoneNumberPurpose: TelephoneNumberPurpose
+    telephoneNumberCountry: String
+    number: String
+}
+### Enums
+enum ContactPreferencesType {
+    CELL
+    EMAIL
+    FAX
+    LETTER
+    PHONE
+}
+enum GovernmentIssuedIdType {
+    DRIVERLICENSE
+    PASSPORT
+}
+enum PartyStatus {
+    ACTIVE
+    DELETED
+    PENDING
+    REJECTED
+}
+enum PaymentStatus {
+    CANCELLED
+    FAILED
+    NOFUNDS
+    PROCESSED
+    PROCESSING
+    SCHEDULED
+}
+enum RecurringPaymentDurationType {
+    NOEND
+    NUMBEROFTIMES
+}
+enum RecurringPaymentFrequency {
+    ONETIME
+    WEEKLY
+    BIWEEKLY
+    TWICEMONTHLY
+    MONTHLY
+    FOURWEEKS
+    BIMONTHLY
+    QUARTERLY
+    SEMIANNUALLY
+    ANNUALLY
+}
+enum RecurringPaymentStatus {
+    CANCELLED
+    FAILED
+    PROCESSED
+    SCHEDULED
+}

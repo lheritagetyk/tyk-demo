@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: us-docker.pkg.dev/fdx-ri-prod/ri/postgres:v60
+    platform: linux/amd64
+    container_name: postgres_container
+    environment:
+      POSTGRES_PASSWORD: F9@#t3jqz8r
+    networks:
+      - tyk-demo_tyk 
+    ports:
+      - 7432:7432
+
+  tomcat:
+    image: us-docker.pkg.dev/fdx-ri-prod/ri/v60-copy:latest
+    platform: linux/amd64
+    container_name: fdxri-tomcat
+    depends_on:
+      - postgres
+    networks:
+      - tyk-demo_tyk 
+    ports:
+      - 8090:8080
+
+networks:
+  tyk-demo_tyk:
+    external: true

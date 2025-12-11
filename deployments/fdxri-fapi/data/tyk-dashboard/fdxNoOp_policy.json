@@ -1,0 +1,93 @@
+{
+  "_id": "68bf08168f572b0001f1cb29",
+  "id": "68bf08168f572b0001f1cb29",
+  "name": "NoOp Policy",
+  "org_id": "5e9d9544a1dcd60001d0ed20",
+  "rate": 1000,
+  "per": 60,
+  "quota_max": -1,
+  "quota_renewal_rate": -1,
+  "throttle_interval": -1,
+  "throttle_retry_limit": -1,
+  "max_query_depth": -1,
+  "access_rights": {
+    "8ef8c11a38b042bf6d0ea1de532e9e69": {
+      "api_name": "FDX V6.2.0 Core API",
+      "api_id": "8ef8c11a38b042bf6d0ea1de532e9e69",
+      "versions": [
+        ""
+      ],
+      "allowed_urls": [
+        {
+          "url": "/NoOp",
+          "methods": [
+            "GET"
+          ]
+        }
+      ],
+      "restricted_types": [],
+      "allowed_types": [],
+      "limit": {
+        "rate": 0,
+        "per": 0,
+        "throttle_interval": 0,
+        "throttle_retry_limit": 0,
+        "max_query_depth": 0,
+        "quota_max": 0,
+        "quota_renews": 0,
+        "quota_remaining": 0,
+        "quota_renewal_rate": 0
+      },
+      "field_access_rights": [],
+      "disable_introspection": false,
+      "allowance_scope": ""
+    },
+    "8ef8c11a38b042bf6d0ea1de532e9e70": {
+      "api_name": "FDX V6.2.0 Core FAPI API",
+      "api_id": "8ef8c11a38b042bf6d0ea1de532e9e70",
+      "versions": [
+        ""
+      ],
+      "allowed_urls": [],
+      "restricted_types": [],
+      "allowed_types": [],
+      "limit": {
+        "rate": 0,
+        "per": 0,
+        "throttle_interval": 0,
+        "throttle_retry_limit": 0,
+        "max_query_depth": 0,
+        "quota_max": 0,
+        "quota_renews": 0,
+        "quota_remaining": 0,
+        "quota_renewal_rate": 0
+      },
+      "field_access_rights": [],
+      "disable_introspection": false,
+      "allowance_scope": ""
+    }
+  },
+  "hmac_enabled": false,
+  "enable_http_signature_validation": false,
+  "active": true,
+  "is_inactive": false,
+  "tags": [],
+  "key_expires_in": 0,
+  "partitions": {
+    "quota": true,
+    "rate_limit": true,
+    "complexity": false,
+    "acl": true,
+    "per_api": false
+  },
+  "last_updated": "1762196997",
+  "meta_data": {},
+  "graphql_access_rights": null,
+  "smoothing": {
+    "enabled": false,
+    "threshold": 500,
+    "trigger": 0.8,
+    "step": 100,
+    "delay": 30
+  }
+}

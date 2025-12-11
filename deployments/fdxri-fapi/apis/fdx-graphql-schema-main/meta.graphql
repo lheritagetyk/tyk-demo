@@ -1,0 +1,91 @@
+extend type Query {
+    getCapability: Capability
+}
+
+type Availability {
+    status: AvailabilityStatus
+
+    description: String
+
+    operation: Operation # TODO is this relevant since it's always nested in the operation?
+
+    plannedAvailability(pagination: Pagination): PlannedAvailabilities
+}
+
+#type AvailabilityList implements PaginatedArray {
+#    page: PageMetadata
+#    availability: [Availability!]
+#}
+
+type Capability {
+    fdxVersions: [String!]
+
+    allowedConnections: Int
+
+    activeConnections: Int
+
+    # Omit messageFormat (not relevant)
+
+    operations(pagination: Pagination): Operations
+
+    # Omit JWKS URL (how would we even do this?)
+}
+
+type CertificationMetric {
+    reportStartTimestamp: DateTime
+
+    reportEndTimestamp: DateTime
+
+    metricsName: String
+
+    operationIds: [String!]
+
+    responseTimeAverage: Float
+
+    averageUpTime: Float
+
+    reportTimestamp: DateTime
+}
+
+type CertificationMetrics implements PaginatedArray {
+    page: PageMetadata
+    metrics: [CertificationMetric!]
+}
+
+type Operation {
+    id: ID
+    availability: Availability
+    # Omit alsoSupported (implicit by GraphQL)
+    version: String
+    fdxVersions: [String!] # How is this multiple?
+    cutOffTime: DateTime
+    # Omit link
+}
+
+type Operations implements PaginatedArray {
+    page: PageMetadata
+    operations: [Operation!]
+}
+
+type PlannedAvailabilities implements PaginatedArray {
+    page: PageMetadata
+    availabilities: [PlannedAvailability!]
+}
+
+type PlannedAvailability {
+    status: AvailabilityStatus
+    description: String
+    startTime: DateTime
+    endTime: DateTime
+}
+
+enum AvailabilityStatus {
+    ALIVE
+    PARTIAL
+    MAINTENANCE
+    DOWN
+}
+
+# Omit MessageFormat (not applicable)
+
+# Omit OperationId (should be a string)

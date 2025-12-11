@@ -1,0 +1,68 @@
+{
+  "description": "Configuration for adding FDX Fine-Grained Consent to Keycloak authentication flow",
+  "steps": [
+    {
+      "step": "Add Custom Authenticator Execution",
+      "description": "Add a custom authenticator execution that redirects to the consent service",
+      "instructions": [
+        "1. Login to Keycloak Admin Console",
+        "2. Navigate to Authentication → Flows",
+        "3. Select 'browser' flow",
+        "4. Click 'Add execution'",
+        "5. Select 'Script-Based Authentication' or create a custom authenticator",
+        "6. Configure it to redirect to: http://consent-service:8900/consent?access_token={access_token}&user_id={user_id}&redirect_uri={redirect_uri}"
+      ]
+    },
+    {
+      "step": "Alternative: Use Keycloak REST API",
+      "description": "Programmatically add the authenticator execution",
+      "api_call": {
+        "method": "POST",
+        "url": "/admin/realms/{realm}/authentication/flows/{flow}/executions/execution",
+        "body": {
+          "provider": "script-based-authenticator",
+          "alias": "fdx-consent-selection",
+          "config": {
+            "script": "// Redirect to consent service\nvar consentUrl = 'http://consent-service:8900/consent';\nvar params = new URLSearchParams();\nparams.append('access_token', context.getToken().getToken());\nparams.append('user_id', user.getId());\nparams.append('redirect_uri', authenticationSession.getRedirectUri());\n\n// Store in session note for later retrieval\nauthenticationSession.setAuthNote('consent_redirect', consentUrl + '?' + params.toString());\n\n// Redirect\ncontext.redirect(consentUrl + '?' + params.toString());"
+          }
+        }
+      }
+    },
+    {
+      "step": "Update Browser Flow",
+      "description": "Add the consent step after 'Forms' and before 'Browser - Conditional OTP'",
+      "flow_order": [
+        "Cookie",
+        "Identity Provider Redirector",
+        "Forms",
+        "FDX Consent Selection",  // <-- Add this
+        "Browser - Conditional OTP",
+        "Conditional - OTP"
+      ]
+    },
+    {
+      "step": "Create Protocol Mapper",
+      "description": "Add consent ID to access token",
+      "instructions": [
+        "1. Navigate to Clients → {client} → Mappers",
+        "2. Click 'Add mapper' → 'By configuration'",
+        "3. Select 'User Attribute'",
+        "4. Configure:",
+        "   - Name: fdx-consent-id",
+        "   - User Attribute: fdx.active.consent.id",
+        "   - Token Claim Name: fdxConsentId",
+        "   - Claim JSON Type: String",
+        "   - Add to access token: ON"
+      ]
+    }
+  ],
+  "notes": [
+    "The consent service must be accessible from Keycloak",
+    "The consent service will handle the account selection UI",
+    "Consents are stored in Keycloak user attributes",
+    "The consent ID is added to the access token via protocol mapper"
+  ]
+}
+
+
+

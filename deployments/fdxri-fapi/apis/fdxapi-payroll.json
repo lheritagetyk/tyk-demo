@@ -1,0 +1,1643 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "version": "6.2.0",
+    "title": "FDX V6.2.0 Payroll API",
+    "description": "Financial Data Exchange V6.2.0 Payroll API",
+    "contact": {
+      "name": "Financial Data Exchange",
+      "url": "https://financialdataexchange.org/",
+      "email": "fdxsupport@financialdataexchange.org"
+    },
+    "license": {
+      "name": "FDX API License Agreement (11-13-2019)",
+      "url": "https://financialdataexchange.org/common/Uploaded%20files/Policies/FDX%20API%20License%20Agreement-(11-13-2019).pdf"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://fdxri-tomcat:8080/fdxapi",
+      "description": "Financial Data Exchange V6 Payroll API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payroll Information",
+      "description": "Verify employment and/or income"
+    }
+  ],
+  "paths": {
+    "/payroll/reports": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/FapiInteractionIdHeader"
+        },
+        {
+          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+        }
+      ],
+      "get": {
+        "operationId": "getPayrollReports",
+        "tags": [
+          "Payroll Information"
+        ],
+        "description": "Search for the employee's latest payroll report",
+        "summary": "Search for a payroll report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResultTypeQuery"
+          },
+          {
+            "$ref": "#/components/parameters/ReportTypeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of payroll reports available",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollReportList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "501": {
+            "$ref": "#/components/responses/501"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/payroll/reports/{reportId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/ReportIdPath"
+        },
+        {
+          "$ref": "#/components/parameters/FapiInteractionIdHeader"
+        },
+        {
+          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+        }
+      ],
+      "get": {
+        "operationId": "getPayrollReport",
+        "tags": [
+          "Payroll Information"
+        ],
+        "description": "Retrieve the employee's specified payroll report",
+        "summary": "Payroll Report detail",
+        "responses": {
+          "200": {
+            "description": "Details of the specific payroll report",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayrollReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Required input data not sent",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "Invalid Input": {
+                    "value": {
+                      "code": "401",
+                      "message": "Report ID is required",
+                      "debugMessage": "Custom developer-level error details for troubleshooting"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payroll Report with provided ID was not found",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "Resource not found": {
+                    "value": {
+                      "code": "800",
+                      "message": "Payroll Report not found",
+                      "debugMessage": "Custom developer-level error details for troubleshooting"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "501": {
+            "$ref": "#/components/responses/501"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuthFapi1Advanced": {
+        "type": "oauth2",
+        "description": "This authorization protocol uses FAPI Security Profile 1.0 Part Two — Advanced. To be used with the FDX API customer data domains. In addition, these operations employ the FDX User Consent framework for permissioned data sharing.\nClient must comply with [5.2.3 Confidential client](https://openid.net/specs/openid-financial-api-part-2-1_0.html#confidential-client). Authorization server must comply with the [5.2.2 Authorization server](https://openid.net/specs/openid-financial-api-part-2-1_0.html#authorization-server).\nClient, authorization server and resource server requirements described in full by:\n  * [FAPI Security Profile 1.0 Part Two — Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html)\n  * FDX API Security Model specification published with the FDX API\n\nConsent User Experience and Issuance described by:\n  * FDX User Experience Guidelines published with the FDX API\n  * Consent API operations and data structures published within the FDX API",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://auth.fi.com/fdx/v6/par",
+            "tokenUrl": "https://auth.fi.com/fdx/v6/token",
+            "scopes": {
+              "fdx:accountbasic:read": "Scope authorizing retrieval of account display name, masked account number, type, description",
+              "fdx:accountdetailed:read": "Scope authorizing retrieval of account information. Includes data from \"Basic\" + account balances, credit limits, due dates, interest rates, rewards balances, recurrences",
+              "fdx:accountpayments:read": "Deprecated and replaced with `fdx:paymentsupport:read` in FDX release V6.1.0, `fdx:accountpayments:read` will be removed with V7 release",
+              "fdx:bills:read": "Scope authorizing retrieval of bill payments data",
+              "fdx:customercontact:read": "Scope authorizing retrieval of name, email, address, phone on file with this institution. Applies to both user and other account holders",
+              "fdx:customerpersonal:read": "Scope authorizing retrieval of name, email, address, phone, DoB, tax ID, SSN on file with this institution",
+              "fdx:images:read": "Scope authorizing retrieval of check and receipt images, which may include PII such as name, full account and routing number",
+              "fdx:investments:read": "Scope authorizing retrieval of details about individual underlying investment positions",
+              "fdx:paymentsupport:read": "Scope authorizing retrieval of full account number and payment network routing number",
+              "fdx:rewards:read": "Scope authorizing retrieval of loyalty rewards programs, transactions and balances",
+              "fdx:statements:read": "Scope authorizing retrieval of periodic PDF statement showing personal information, account and transaction details. May contain PII such as name, address",
+              "fdx:tax:read": "Scope authorizing retrieval of information reporting tax forms and data, including any PII such as name, address, tax ID and account number",
+              "fdx:transactions:read": "Scope authorizing retrieval of historical and current transactions, transaction types, amounts, dates and descriptions",
+              "offline_access": "Scope authorizing the client to refresh `access_tokens` without user present",
+              "openid": "Scope authorizing access to the user's identity details"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "ReportIdPath": {
+        "name": "reportId",
+        "in": "path",
+        "description": "Specific reportId to retrieve",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Identifier"
+        }
+      },
+      "ReportTypeQuery": {
+        "name": "reportType",
+        "in": "query",
+        "description": "Whether to retrieve Verification of Employment (\"VOE\") or Verification of Income and Employment (\"VOIE\") reports",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/PayrollReportType"
+        }
+      },
+      "FapiInteractionIdHeader": {
+        "name": "x-fapi-interaction-id",
+        "in": "header",
+        "description": "Unique identifier for this interaction",
+        "schema": {
+          "$ref": "#/components/schemas/FapiInteractionId"
+        },
+        "required": true,
+        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a"
+      },
+      "FdxApiActorTypeHeader": {
+        "name": "FDX-API-Actor-Type",
+        "in": "header",
+        "description": "Identifies whether the customer is present (USER) or it is a BATCH operation",
+        "schema": {
+          "$ref": "#/components/schemas/ActorType"
+        },
+        "example": "BATCH"
+      },
+      "ResultTypeQuery": {
+        "name": "resultType",
+        "in": "query",
+        "description": "Flag to indicate if you want a lightweight array of metadata (AccountDescriptor or Tax or Operations) or full item details (Account or a Tax subclass or Availability details). If set to 'lightweight', should only return the fields associated with the metadata entity. This field is not required, defaults to lightweight",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/ResultType"
+        }
+      }
+    },
+    "schemas": {
+      "BasePayroll": {
+        "title": "Base Payroll Rate",
+        "description": "Provides a person's base pay rate",
+        "type": "object",
+        "properties": {
+          "rate": {
+            "description": "The amount and currency of the base pay rate of employee",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          "rateType": {
+            "description": "Whether the worker's rate is ANNUAL, DAILY, HOURLY, OTHER",
+            "$ref": "#/components/schemas/PayrollRateType"
+          }
+        },
+        "required": [
+          "rate",
+          "rateType"
+        ]
+      },
+      "Employee": {
+        "title": "Employee entity",
+        "description": "Represents an employee",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Person"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "employeeId": {
+                "description": "Provider's long-term persistent id for the employee",
+                "$ref": "#/components/schemas/Identifier"
+              },
+              "name": {
+                "description": "Employee's full name",
+                "$ref": "#/components/schemas/IndividualName"
+              }
+            }
+          }
+        ],
+        "required": [
+          "name"
+        ]
+      },
+      "Employer": {
+        "title": "Employer entity",
+        "description": "Represents an employer",
+        "type": "object",
+        "properties": {
+          "employerId": {
+            "description": "Provider's long-term persistent id for the employer",
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "name": {
+            "description": "The employer's name",
+            "$ref": "#/components/schemas/BusinessName"
+          },
+          "dbas": {
+            "description": "Array of Doing Business As names for this employer",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "taxId": {
+            "description": "Country specific Tax Id associated with this employer (FEIN in USA or BN in Canada)",
+            "type": "string"
+          },
+          "taxIdCountry": {
+            "description": "Country originating the employer's taxId element",
+            "$ref": "#/components/schemas/Iso3166CountryCode"
+          },
+          "contacts": {
+            "description": "Employer's various contact information",
+            "$ref": "#/components/schemas/Contacts"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Employment": {
+        "title": "Employment",
+        "description": "Provides a person's employment details",
+        "type": "object",
+        "properties": {
+          "employer": {
+            "description": "The employer for the job/position",
+            "$ref": "#/components/schemas/Employer"
+          },
+          "jobTitle": {
+            "description": "The title of the job/position",
+            "type": "string"
+          },
+          "originalHireDate": {
+            "description": "The date when employee joined for the first time.",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "mostRecentHireDate": {
+            "description": "The date when employee re-joined most recently.",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "endDate": {
+            "description": "The employment end date",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "status": {
+            "description": "The employee's employment status, ACTIVE or INACTIVE",
+            "$ref": "#/components/schemas/ActiveStatus"
+          },
+          "supplementalStatus": {
+            "description": "Supplemental detail of employee's employment status",
+            "$ref": "#/components/schemas/SupplementalStatus"
+          },
+          "type": {
+            "description": "The employee's employment type, CONTRACTED, FULL-TIME, OTHER, PART-TIME, SEASONAL, TEMPORARY",
+            "$ref": "#/components/schemas/EmploymentType"
+          }
+        },
+        "required": [
+          "employer",
+          "status"
+        ]
+      },
+      "GrossPay": {
+        "title": "Payment Amounts",
+        "description": "Year to date amounts for current and previous years",
+        "type": "object",
+        "properties": {
+          "total": {
+            "description": "Total gross pay for covered period",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          "base": {
+            "description": "Base pay part of Gross pay for covered period",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          "bonus": {
+            "description": "Bonus pay for covered period",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          "commission": {
+            "description": "Commission for covered period",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          "overtime": {
+            "description": "Overtime pay for covered period",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          "otherEarnings": {
+            "description": "Other earnings received in covered period",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OtherAmount"
+            }
+          }
+        },
+        "required": [
+          "total"
+        ]
+      },
+      "Income": {
+        "title": "Income",
+        "description": "Provides a person's employment income details. Applicable only for VOIE (Verification of Income and Employment) data retrieval",
+        "type": "object",
+        "properties": {
+          "baseRate": {
+            "description": "The employee's base payroll rate",
+            "$ref": "#/components/schemas/BasePayroll"
+          },
+          "payrollFrequency": {
+            "description": "The frequency of payments",
+            "$ref": "#/components/schemas/PayrollFrequency"
+          },
+          "latestPayDate": {
+            "description": "The date of employee's most recent pay",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "latestPayPeriodEndDate": {
+            "description": "The end date of employee's most recent pay period",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "annualPay": {
+            "description": "Year-to-date pay for current year and total annual pay for previous years",
+            "$ref": "#/components/schemas/PaymentAmounts"
+          }
+        },
+        "required": [
+          "payrollFrequency"
+        ]
+      },
+      "OtherAmount": {
+        "title": "Other Monetary Amount",
+        "description": "A monetary amount with its source name and its currency code",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MonetaryAmount"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "The source name of this monetary amount",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "PaymentAmounts": {
+        "title": "Payment Amounts",
+        "description": "Year to date amounts for current and previous years",
+        "type": "object",
+        "properties": {
+          "year": {
+            "description": "The year in which this income was earned",
+            "type": "integer"
+          },
+          "grossPay": {
+            "description": "Gross pay for covered period",
+            "$ref": "#/components/schemas/GrossPay"
+          },
+          "netPay": {
+            "description": "Net pay for covered period",
+            "$ref": "#/components/schemas/MonetaryAmount"
+          }
+        },
+        "required": [
+          "year",
+          "grossPay"
+        ]
+      },
+      "PayrollReport": {
+        "title": "Payroll Report entity",
+        "description": "An employee's Payroll Report",
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "description": "The report identification number",
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "reportType": {
+            "description": "The type of report",
+            "$ref": "#/components/schemas/PayrollReportType"
+          },
+          "generationDate": {
+            "description": "The generation date of the report",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "dataAsOf": {
+            "description": "The data in the report is as of this date.",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "employee": {
+            "description": "The employee",
+            "$ref": "#/components/schemas/Employee"
+          },
+          "employment": {
+            "description": "The employee's employment",
+            "$ref": "#/components/schemas/Employment"
+          },
+          "incomes": {
+            "description": "The employee's year to date income amounts for current and previous years omitted for Verification of Employment requests (VOE), included for Verification of Income and Employment requests (VOI / VOIE)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Income"
+            }
+          },
+          "links": {
+            "$ref": "#/components/schemas/HateoasLinks",
+            "description": "Links to retrieve this payroll report, or to invoke related APIs"
+          }
+        },
+        "required": [
+          "reportId",
+          "reportType",
+          "generationDate",
+          "employee",
+          "employment"
+        ]
+      },
+      "PayrollReportList": {
+        "title": "Payroll Report List entity",
+        "description": "Response object for /payroll/report API with list of reports available",
+        "type": "object",
+        "properties": {
+          "summaries": {
+            "description": "Zero or more PayrollReportSummaries for lightweight response",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayrollReportSummary"
+            }
+          },
+          "reports": {
+            "description": "Zero or more PayrollReports, for details response",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayrollReport"
+            }
+          }
+        }
+      },
+      "PayrollReportSummary": {
+        "title": "Payroll Report Summary entity",
+        "description": "The list of payroll reports for an employee",
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "description": "The report identification number",
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "reportType": {
+            "description": "The type of report",
+            "$ref": "#/components/schemas/PayrollReportType"
+          },
+          "generationDate": {
+            "description": "The generation date of the report",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "dataAsOf": {
+            "description": "The data in the report is as of this date.",
+            "$ref": "#/components/schemas/DateString"
+          },
+          "employeeId": {
+            "description": "Provider's long-term persistent id for the employee",
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "employeeName": {
+            "description": "Employee's full name",
+            "$ref": "#/components/schemas/IndividualName"
+          },
+          "employerId": {
+            "description": "The employer for this report",
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "employerName": {
+            "description": "The employer's name",
+            "$ref": "#/components/schemas/BusinessName"
+          },
+          "links": {
+            "$ref": "#/components/schemas/HateoasLinks",
+            "description": "Links to retrieve this payroll report, or to invoke related APIs"
+          }
+        },
+        "required": [
+          "reportId",
+          "reportType",
+          "generationDate",
+          "employeeName",
+          "employerName"
+        ]
+      },
+      "ActiveStatus": {
+        "title": "Active/Inactive Status",
+        "description": "Specifies the employment status of ACTIVE or INACTIVE",
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "INACTIVE"
+        ]
+      },
+      "EmploymentType": {
+        "title": "Employment type",
+        "description": "Specifies the employment type, such as CONTRACTED, FULL-TIME, OTHER, PART-TIME, SEASONAL, TEMPORARY",
+        "type": "string",
+        "enum": [
+          "CONTRACTED",
+          "FULL_TIME",
+          "OTHER",
+          "PART_TIME",
+          "SEASONAL",
+          "TEMPORARY"
+        ]
+      },
+      "PayrollFrequency": {
+        "title": "Payroll Frequency type",
+        "description": "The frequency of employee payments",
+        "type": "string",
+        "enum": [
+          "ANNUALLY",
+          "BI_WEEKLY",
+          "DAILY",
+          "EVERY_2_6_WEEKS",
+          "EVERY_4_WEEKS",
+          "EVERY_5_2_WEEKS",
+          "MONTHLY",
+          "QUARTERLY",
+          "SEMI_ANNUALLY",
+          "SEMI_MONTHLY",
+          "WEEKLY"
+        ]
+      },
+      "PayrollRateType": {
+        "title": "Payroll Rate Type",
+        "description": "Specifies whether the employee's pay is ANNUAL, DAILY, HOURLY, OTHER",
+        "type": "string",
+        "enum": [
+          "ANNUAL",
+          "DAILY",
+          "HOURLY",
+          "OTHER"
+        ]
+      },
+      "PayrollReportType": {
+        "title": "Payroll Report Type",
+        "description": "The type of payroll report, VOE - for Verification of Employment, VOIE - for Verification of Income and Employment",
+        "type": "string",
+        "enum": [
+          "VOE",
+          "VOIE"
+        ]
+      },
+      "SupplementalStatus": {
+        "title": "Supplemental Status",
+        "description": "Additional information about ACTIVE/INACTIVE employment status",
+        "type": "string",
+        "enum": [
+          "FURLOUGHED",
+          "LEAVE",
+          "MEDICAL_LEAVE",
+          "MILITARY_LEAVE",
+          "PATERNITY_LEAVE",
+          "QUIT",
+          "RETIRED",
+          "TERMINATED",
+          "VACATION"
+        ]
+      },
+      "FapiInteractionId": {
+        "title": "FAPI Interaction ID",
+        "description": "Universally unique identifier for this interaction, used across all FDX API requests and responses",
+        "type": "string",
+        "format": "uuid",
+        "minLength": 36,
+        "maxLength": 36,
+        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a"
+      },
+      "ActorType": {
+        "title": "FDX API Actor Type",
+        "description": "Indicates whether a customer is present and has requested the operation (USER), or if a batch job has requested the operation (BATCH)",
+        "type": "string",
+        "enum": [
+          "BATCH",
+          "USER"
+        ]
+      },
+      "ResultType": {
+        "title": "Result Type",
+        "description": "Flag to indicate if you want a lightweight array of metadata (AccountDescriptor or Tax or Operations) or full item details (Account or a Tax subclass or Availability details). If set to 'lightweight', should only return the fields associated with the metadata entity.",
+        "type": "string",
+        "enum": [
+          "details",
+          "lightweight"
+        ],
+        "default": "lightweight"
+      },
+      "Identifier": {
+        "title": "Identifier",
+        "description": "Value for a unique identifier",
+        "type": "string",
+        "maxLength": 256
+      },
+      "DateString": {
+        "title": "Date String",
+        "description": "ISO 8601 full-date in format 'YYYY-MM-DD' according to [IETF RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339.html#section-5.6)",
+        "type": "string",
+        "format": "date",
+        "maxLength": 10,
+        "example": "2021-07-15"
+      },
+      "IndividualName": {
+        "title": "Individual name",
+        "description": "First name, middle initial, last name, suffix fields",
+        "type": "object",
+        "properties": {
+          "first": {
+            "description": "First name",
+            "type": "string"
+          },
+          "middle": {
+            "description": "Middle initial",
+            "type": "string"
+          },
+          "last": {
+            "description": "Last name",
+            "type": "string"
+          },
+          "suffix": {
+            "description": "Generational or academic suffix",
+            "type": "string"
+          }
+        }
+      },
+      "BusinessName": {
+        "title": "Business name",
+        "description": "Name 1, Name 2",
+        "type": "object",
+        "properties": {
+          "name1": {
+            "description": "Name line 1",
+            "type": "string"
+          },
+          "name2": {
+            "description": "Name line 2",
+            "type": "string"
+          }
+        }
+      },
+      "HttpAction": {
+        "title": "HTTP Action Type",
+        "description": "HTTP Methods to use for requests",
+        "type": "string",
+        "enum": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ]
+      },
+      "ContentTypes": {
+        "title": "Content Types",
+        "description": "Types of document formats. (Suggested values)",
+        "type": "string",
+        "enum": [
+          "application/json",
+          "application/pdf",
+          "application/zip",
+          "image/gif",
+          "image/jpeg",
+          "image/png",
+          "image/tiff"
+        ]
+      },
+      "HateoasLink": {
+        "title": "HATEOAS Link",
+        "description": "REST application constraint (Hypermedia As The Engine Of Application State)",
+        "required": [
+          "href"
+        ],
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string",
+            "format": "uri-reference",
+            "description": "URL to invoke the action on the resource",
+            "example": "https://api.fi.com/fdx/v4/accounts/12345"
+          },
+          "action": {
+            "description": "HTTP Method to use for the request",
+            "$ref": "#/components/schemas/HttpAction"
+          },
+          "rel": {
+            "description": "Relation of this link to its containing entity, as defined by and with many example relation values at [IETF RFC5988](https://datatracker.ietf.org/doc/html/rfc5988)",
+            "type": "string"
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentTypes"
+            },
+            "description": "Content-types that can be used in the Accept header"
+          }
+        }
+      },
+      "HateoasLinks": {
+        "title": "HATEOAS Links array",
+        "description": "Links relative to this containing entity",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/HateoasLink"
+        }
+      },
+      "String64": {
+        "title": "String 64",
+        "description": "String of maximum length 64",
+        "type": "string",
+        "maxLength": 64
+      },
+      "Iso3166CountryCode": {
+        "title": "ISO 3166 Country Code",
+        "description": "ISO 3166-1 alpha-2 codes as of April 5, 2023, from officially assigned Country Codes on [ISO Online Browsing Platform](https://www.iso.org/obp/ui/). Change log is at [ISO 3166 Maintenance Agency](https://www.iso.org/fr/committee/48750.html?t=3V3rukDb61p05Wd6ojyTRvE0S3Yg_fZgUjrLjHWcd9-mDmTKHOGjbX3nEJ3SqHar&view=documents#section-isodocuments-top)",
+        "type": "string",
+        "enum": [
+          "AD",
+          "AE",
+          "AF",
+          "AG",
+          "AI",
+          "AL",
+          "AM",
+          "AO",
+          "AQ",
+          "AR",
+          "AS",
+          "AT",
+          "AU",
+          "AW",
+          "AX",
+          "AZ",
+          "BA",
+          "BB",
+          "BD",
+          "BE",
+          "BF",
+          "BG",
+          "BH",
+          "BI",
+          "BJ",
+          "BL",
+          "BM",
+          "BN",
+          "BO",
+          "BQ",
+          "BR",
+          "BS",
+          "BT",
+          "BV",
+          "BW",
+          "BY",
+          "BZ",
+          "CA",
+          "CC",
+          "CD",
+          "CF",
+          "CG",
+          "CH",
+          "CI",
+          "CK",
+          "CL",
+          "CM",
+          "CN",
+          "CO",
+          "CR",
+          "CU",
+          "CV",
+          "CW",
+          "CX",
+          "CY",
+          "CZ",
+          "DE",
+          "DJ",
+          "DK",
+          "DM",
+          "DO",
+          "DZ",
+          "EC",
+          "EE",
+          "EG",
+          "EH",
+          "ER",
+          "ES",
+          "ET",
+          "FI",
+          "FJ",
+          "FK",
+          "FM",
+          "FO",
+          "FR",
+          "GA",
+          "GB",
+          "GD",
+          "GE",
+          "GF",
+          "GG",
+          "GH",
+          "GI",
+          "GL",
+          "GM",
+          "GN",
+          "GP",
+          "GQ",
+          "GR",
+          "GS",
+          "GT",
+          "GU",
+          "GW",
+          "GY",
+          "HK",
+          "HM",
+          "HN",
+          "HR",
+          "HT",
+          "HU",
+          "ID",
+          "IE",
+          "IL",
+          "IM",
+          "IN",
+          "IO",
+          "IQ",
+          "IR",
+          "IS",
+          "IT",
+          "JE",
+          "JM",
+          "JO",
+          "JP",
+          "KE",
+          "KG",
+          "KH",
+          "KI",
+          "KM",
+          "KN",
+          "KP",
+          "KR",
+          "KW",
+          "KY",
+          "KZ",
+          "LA",
+          "LB",
+          "LC",
+          "LI",
+          "LK",
+          "LR",
+          "LS",
+          "LT",
+          "LU",
+          "LV",
+          "LY",
+          "MA",
+          "MC",
+          "MD",
+          "ME",
+          "MF",
+          "MG",
+          "MH",
+          "MK",
+          "ML",
+          "MM",
+          "MN",
+          "MO",
+          "MP",
+          "MQ",
+          "MR",
+          "MS",
+          "MT",
+          "MU",
+          "MV",
+          "MW",
+          "MX",
+          "MY",
+          "MZ",
+          "NA",
+          "NC",
+          "NE",
+          "NF",
+          "NG",
+          "NI",
+          "NL",
+          "NO",
+          "NP",
+          "NR",
+          "NU",
+          "NZ",
+          "OM",
+          "PA",
+          "PE",
+          "PF",
+          "PG",
+          "PH",
+          "PK",
+          "PL",
+          "PM",
+          "PN",
+          "PR",
+          "PS",
+          "PT",
+          "PW",
+          "PY",
+          "QA",
+          "RE",
+          "RO",
+          "RS",
+          "RU",
+          "RW",
+          "SA",
+          "SB",
+          "SC",
+          "SD",
+          "SE",
+          "SG",
+          "SH",
+          "SI",
+          "SJ",
+          "SK",
+          "SL",
+          "SM",
+          "SN",
+          "SO",
+          "SR",
+          "SS",
+          "ST",
+          "SV",
+          "SX",
+          "SY",
+          "SZ",
+          "TC",
+          "TD",
+          "TF",
+          "TG",
+          "TH",
+          "TJ",
+          "TK",
+          "TL",
+          "TM",
+          "TN",
+          "TO",
+          "TR",
+          "TT",
+          "TV",
+          "TW",
+          "TZ",
+          "UA",
+          "UG",
+          "UM",
+          "US",
+          "UY",
+          "UZ",
+          "VA",
+          "VC",
+          "VE",
+          "VG",
+          "VI",
+          "VN",
+          "VU",
+          "WF",
+          "WS",
+          "YE",
+          "YT",
+          "ZA",
+          "ZM",
+          "ZW"
+        ]
+      },
+      "Address": {
+        "title": "Address",
+        "description": "U.S. domestic address or a foreign address with country other than 'US'",
+        "type": "object",
+        "properties": {
+          "line1": {
+            "$ref": "#/components/schemas/String64",
+            "description": "Address line 1"
+          },
+          "line2": {
+            "$ref": "#/components/schemas/String64",
+            "description": "Address line 2"
+          },
+          "line3": {
+            "$ref": "#/components/schemas/String64",
+            "description": "Address line 3"
+          },
+          "city": {
+            "$ref": "#/components/schemas/String64",
+            "description": "City"
+          },
+          "region": {
+            "$ref": "#/components/schemas/String64",
+            "description": "State, Province, Territory, Canton or Prefecture. From [Universal Postal Union](https://www.upu.int/en/Postal-Solutions/Programmes-Services/Addressing-Solutions#addressing-s42-standard) as of 2-26-2020, [S42 International Address Standards](https://www.upu.int/UPU/media/upu/documents/PostCode/S42_International-Addressing-Standards.pdf). For U.S. addresses can be 2-character code from '#/components/schemas/StateCode'"
+          },
+          "postalCode": {
+            "type": "string",
+            "maxLength": 16,
+            "description": "Postal code"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Iso3166CountryCode",
+            "description": "Country code"
+          }
+        }
+      },
+      "DeliveryAddressType": {
+        "title": "Delivery Address Type",
+        "description": "The location type of an address",
+        "type": "string",
+        "enum": [
+          "BUSINESS",
+          "DELIVERY",
+          "HOME",
+          "MAILING"
+        ]
+      },
+      "DeliveryAddress": {
+        "title": "Delivery Address",
+        "description": "A delivery address and its location type",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Address"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "$ref": "#/components/schemas/DeliveryAddressType",
+                "description": "Type of address location. One of BUSINESS, DELIVERY, HOME, MAILING"
+              }
+            }
+          }
+        ]
+      },
+      "TelephoneNumberType": {
+        "title": "Telephone Number Type",
+        "description": "Purpose or type of telephone number",
+        "type": "string",
+        "enum": [
+          "BUSINESS",
+          "CELL",
+          "FAX",
+          "HOME"
+        ]
+      },
+      "TelephoneNumber": {
+        "title": "Telephone Number",
+        "description": "Standard for international phone numbers",
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/TelephoneNumberType",
+            "description": "Type of phone number: HOME, BUSINESS, CELL, FAX"
+          },
+          "country": {
+            "type": "string",
+            "maxLength": 3,
+            "description": "Country calling codes defined by ITU-T recommendations E.123 and E.164"
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 15,
+            "pattern": "\\d+",
+            "description": "Telephone subscriber number defined by ITU-T recommendation E.164"
+          }
+        }
+      },
+      "Contacts": {
+        "title": "Contacts entity",
+        "description": "Contains all contact details for individual or business",
+        "type": "object",
+        "properties": {
+          "emails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of the contact email addresses"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryAddress"
+            },
+            "description": "Array of the contact physical addresses"
+          },
+          "telephones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TelephoneNumber"
+            },
+            "description": "Array of the contact telephone numbers"
+          }
+        }
+      },
+      "Person": {
+        "title": "Person entity",
+        "description": "Represents a person",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Contacts"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dateOfBirth": {
+                "$ref": "#/components/schemas/DateString",
+                "description": "The person's date of birth"
+              },
+              "taxId": {
+                "type": "string",
+                "description": "Country specific Tax Id associated with this customer (SIN or NAS in Canada, SSN or TIN in US, etc.)"
+              },
+              "taxIdCountry": {
+                "$ref": "#/components/schemas/Iso3166CountryCode",
+                "description": "Country originating the Customer's taxId element"
+              },
+              "governmentId": {
+                "type": "string",
+                "description": "A federal (such as passport) or state (such as driver's license) issued identifier"
+              }
+            }
+          }
+        ]
+      },
+      "Iso4217CurrencyCode": {
+        "title": "ISO 4217 Currency Code",
+        "description": "Currency, fund and precious metal codes effective from June 25, 2024 per [ISO 4217 Currency Code Maintenance](https://www.six-group.com/en/products-services/financial-information/data-standards.html). ZWL (the Zimbabwean dollar) expires August 31, 2024 and is deprecated and replaced with ZWG (Zimbabwe Gold), effective on June 25, 2024",
+        "type": "string",
+        "enum": [
+          "AED",
+          "AFN",
+          "ALL",
+          "AMD",
+          "ANG",
+          "AOA",
+          "ARS",
+          "AUD",
+          "AWG",
+          "AZN",
+          "BAM",
+          "BBD",
+          "BDT",
+          "BGN",
+          "BHD",
+          "BIF",
+          "BMD",
+          "BND",
+          "BOB",
+          "BOV",
+          "BRL",
+          "BSD",
+          "BTN",
+          "BWP",
+          "BYN",
+          "BZD",
+          "CAD",
+          "CDF",
+          "CHE",
+          "CHF",
+          "CHW",
+          "CLF",
+          "CLP",
+          "CNY",
+          "COP",
+          "COU",
+          "CRC",
+          "CUC",
+          "CUP",
+          "CVE",
+          "CZK",
+          "DJF",
+          "DKK",
+          "DOP",
+          "DZD",
+          "EGP",
+          "ERN",
+          "ETB",
+          "EUR",
+          "FJD",
+          "FKP",
+          "GBP",
+          "GEL",
+          "GHS",
+          "GIP",
+          "GMD",
+          "GNF",
+          "GTQ",
+          "GYD",
+          "HKD",
+          "HNL",
+          "HTG",
+          "HUF",
+          "IDR",
+          "ILS",
+          "INR",
+          "IQD",
+          "IRR",
+          "ISK",
+          "JMD",
+          "JOD",
+          "JPY",
+          "KES",
+          "KGS",
+          "KHR",
+          "KMF",
+          "KPW",
+          "KRW",
+          "KWD",
+          "KYD",
+          "KZT",
+          "LAK",
+          "LBP",
+          "LKR",
+          "LRD",
+          "LSL",
+          "LYD",
+          "MAD",
+          "MDL",
+          "MGA",
+          "MKD",
+          "MMK",
+          "MNT",
+          "MOP",
+          "MRU",
+          "MUR",
+          "MVR",
+          "MWK",
+          "MXN",
+          "MXV",
+          "MYR",
+          "MZN",
+          "NAD",
+          "NGN",
+          "NIO",
+          "NOK",
+          "NPR",
+          "NZD",
+          "OMR",
+          "PAB",
+          "PEN",
+          "PGK",
+          "PHP",
+          "PKR",
+          "PLN",
+          "PYG",
+          "QAR",
+          "RON",
+          "RSD",
+          "RUB",
+          "RWF",
+          "SAR",
+          "SBD",
+          "SCR",
+          "SDG",
+          "SEK",
+          "SGD",
+          "SHP",
+          "SLE",
+          "SLL",
+          "SOS",
+          "SRD",
+          "SSP",
+          "STN",
+          "SVC",
+          "SYP",
+          "SZL",
+          "THB",
+          "TJS",
+          "TMT",
+          "TND",
+          "TOP",
+          "TRY",
+          "TTD",
+          "TWD",
+          "TZS",
+          "UAH",
+          "UGX",
+          "USD",
+          "USN",
+          "UYI",
+          "UYU",
+          "UYW",
+          "UZS",
+          "VED",
+          "VES",
+          "VND",
+          "VUV",
+          "WST",
+          "XAF",
+          "XAG",
+          "XAU",
+          "XBA",
+          "XBB",
+          "XBC",
+          "XBD",
+          "XCD",
+          "XDR",
+          "XOF",
+          "XPD",
+          "XPF",
+          "XPT",
+          "XSU",
+          "XTS",
+          "XUA",
+          "XXX",
+          "YER",
+          "ZAR",
+          "ZMW",
+          "ZWG",
+          "ZWL"
+        ]
+      },
+      "MonetaryAmount": {
+        "title": "Monetary Amount",
+        "description": "Monetary amount and its currency code",
+        "type": "object",
+        "properties": {
+          "amount": {
+            "description": "The monetary amount",
+            "type": "number"
+          },
+          "currency": {
+            "description": "Currency code of the monetary amount",
+            "$ref": "#/components/schemas/Iso4217CurrencyCode"
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "Error": {
+        "title": "Error",
+        "description": "An error entity which can be used at the API level for error responses or at the account level to indicate a problem specific to a particular account. See the error codes and descriptions defined in the latest FDX API Specification document, section 6.2 Errors",
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Error code defined by FDX API Specification or Data Provider indicating the error situation which has occurred"
+          },
+          "message": {
+            "type": "string",
+            "description": "End user displayable information which might help the customer diagnose an error"
+          },
+          "debugMessage": {
+            "type": "string",
+            "description": "Message used to debug the root cause of the error. Contents should not be used in consumer's business logic. Can change at any time and should only be used for consumer to communicate with the data provider about an issue. Provider can include an error GUID in message for their use."
+          }
+        }
+      }
+    },
+    "headers": {
+      "x-fapi-interaction-id": {
+        "description": "Unique identifier for this interaction",
+        "schema": {
+          "$ref": "#/components/schemas/FapiInteractionId"
+        },
+        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a"
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "Input sent by client does not satisfy API specification",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "Invalid Input": {
+                "value": {
+                  "code": "401",
+                  "message": "Invalid Input",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Request lacks valid authentication credentials for the target resource",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "Unauthorized": {
+                "value": {
+                  "code": "603",
+                  "message": "Authentication failed",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Data not found for request parameters",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "Data not found for request parameters": {
+                "value": {
+                  "code": "1107",
+                  "message": "Data not found for request parameters",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Catch-all exception where request was not processed due to an internal outage/issue. Consider other more specific errors before using this error",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "Internal server error": {
+                "value": {
+                  "code": "500",
+                  "message": "Internal server error",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "501": {
+        "description": "Error when FdxVersion in Header is not one of those implemented at backend",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "FdxVersion not supported or not implemented": {
+                "value": {
+                  "code": "1106",
+                  "message": "FdxVersion not supported or not implemented",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting"
+                }
+              }
+            }
+          }
+        }
+      },
+      "503": {
+        "description": "System is down for maintenance",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "examples": {
+              "Scheduled Maintenance": {
+                "value": {
+                  "code": "503",
+                  "message": "Scheduled Maintenance",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

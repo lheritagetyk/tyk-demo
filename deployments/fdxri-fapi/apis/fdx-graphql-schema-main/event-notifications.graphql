@@ -1,0 +1,233 @@
+extend type Mutation {
+    createNotificationSubscription(subscription: NotificationSubscriptionForCreate): NotificationSubscription!
+    deleteNotificationSubscription(subscriptionId: ID!): ID
+    publishNotification(notification: NotificationForCreate): Notification
+}
+
+extend type Query {
+    getNotificationSubscription(subscriptionId: ID!): NotificationSubscription
+    getNotifications(pagination: Pagination, dataRecipientId: ID): Notifications
+}
+
+interface Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    # Omit URL
+}
+
+input NotificationForCreate {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: PartyForCreate!
+
+    subscriber: PartyForCreate
+
+    # Omit URL
+}
+
+type AccountNotification implements Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    notificationPayload: Account!
+
+    # Omit URL
+}
+type ConsentNotification implements Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    notificationPayload: ConsentGrant!
+
+    # Omit URL
+}
+
+type CustomerNotification implements Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    notificationPayload: Customer!
+
+    # Omit URL
+}
+type MaintenanceNotification implements Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    # notificationPayload: ??? # How to do this?  There's no ID for "a maintenance"
+
+    # Omit URL
+}
+type PartyNotification implements Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    notificationPayload: Party
+
+    # Omit URL
+}
+
+"To be used for calls to remote servers (payload is just ID)"
+type CallbackNotification implements Notification {
+    notificationId: ID!
+
+    type: NotificationType!
+
+    sentOn: DateTime!
+
+    category: NotificationCategory!
+
+    priority: NotificationPriority
+
+    publisher: Party!
+
+    subscriber: Party
+
+    notificationPayload: NotificationPayload!
+
+    # Omit URL
+}
+
+type NotificationPayload {
+    id: String
+
+    idType: NotificationPayloadIdType
+}
+
+type Notifications implements PaginatedArray {
+    page: PageMetadata
+    notifications: [Notification!]
+}
+
+type NotificationSubscription {
+    type: NotificationType!
+    category: NotificationCategory!
+    callbackUrl: URI!
+    subscriber: Party!
+    effectiveDate: Date
+    subscriptionId: ID
+}
+input NotificationSubscriptionForCreate {
+    type: NotificationType!
+    category: NotificationCategory!
+    callbackUrl: URI!
+    subscriber: PartyForCreate!
+    effectiveDate: Date
+    subscriptionId: ID
+}
+
+### Enums
+enum NotificationCategory {
+    CONSENT
+    FRAUD
+    MAINTENANCE
+    NEW_DATA
+    SECURITY
+}
+
+enum NotificationPayloadIdType {
+    ACCOUNT
+    CONSENT
+    CUSTOMER
+    MAINTENANCE
+    PARTY
+}
+
+enum NotificationPriority {
+    HIGH
+    MEDIUM
+    LOW
+}
+
+enum NotificationSeverity {
+    EMERGENCY
+    ALERT
+    WARNING
+    NOTICE
+    INFO
+}
+
+enum NotificationType {
+    BALANCE
+    CONSENT_REVOKED
+    CONSENT_UPDATED
+    CUSTOM
+    PLANNED_OUTAGE
+    RISK
+    SERVICE
+}

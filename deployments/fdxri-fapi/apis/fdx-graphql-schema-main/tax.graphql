@@ -1,0 +1,5279 @@
+#extend type Query {
+#
+#}
+
+"Tax form credentials container for QR Code purposes"
+type BasicAuthCredentials
+{
+    "Year for which taxes are being paid"
+    taxYear: Int
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+    "Confidential and unique identifier of the tax form"
+    id: ID
+    "Unique, randomized and restricted password for this document"
+    passcode: ID
+}
+
+type BasicAuthForQR
+{
+    "The Basic Authentication credentials to retrieve a tax form"
+    basicAuth: BasicAuthCredentials
+    "Financial Data Exchange schema version number"
+    version: FdxVersion
+    "The FDX registration ID of company or software generating this tax data"
+    softwareId: String
+}
+
+type BusinessIncomeStatement implements Tax
+{
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box C, Business name"
+    businessName: String
+
+    "Box 1, Gross receipts or sales"
+    sales: Float
+
+    "Box 2, Returns and allowances"
+    returns: Float
+
+    "Box 6, Other income, including federal and state gasoline or fuel tax credit or refund"
+    otherIncome: [DescriptionAmount!]!
+
+    "Box 8, Advertising"
+    advertising: Float
+
+    "Box 9, Car and truck expenses"
+    carAndTruck: Float
+
+    "Box 10, Commissions and fees"
+    commissions: Float
+
+    "Box 11, Contract labor"
+    contractLabor: Float
+
+    "Box 12, Depletion"
+    depletion: Float
+
+    "Box 13, Depreciation"
+    depreciation: Float
+
+    "Box 14, Employee benefit programs"
+    employeeBenefits: Float
+
+    "Box 15, Insurance"
+    insurance: Float
+
+    "Box 16a, Mortgage interest"
+    mortgageInterest: Float
+
+    "Box 16b, Other interest"
+    otherInterest: Float
+
+    "Box 17, Legal and professional services"
+    legal: Float
+
+    "Box 18, Office expense"
+    office: Float
+
+    "Box 19, Pension and profit-sharing plans"
+    pension: Float
+
+    "Box 20a, Equipment rent"
+    equipmentRent: Float
+
+    "Box 21, Repairs and maintenance"
+    repairs: Float
+
+    "Box 22, Supplies"
+    supplies: Float
+
+    "Box 23, Taxes and licenses"
+    taxes: Float
+
+    "Box 24a, Travel"
+    travel: Float
+
+    "Box 24b, Deductible meals"
+    meals: Float
+
+    "Box 25, Utilities"
+    utilities: Float
+
+    "Box 26, Wages"
+    wages: Float
+
+    "Box 27, Other expenses"
+    otherExpenses: DescriptionAmount
+
+    "Box 35, Inventory at beginning of year"
+    beginningInventory: Float
+
+    "Box 36, Purchases"
+    purchases: Float
+
+    "Box 37, Cost of labor"
+    costOfLabor: Float
+
+    "Box 38, Materials and supplies"
+    materials: Float
+
+    "Box 39, Other costs"
+    otherCosts: [DescriptionAmount!]
+
+    "Box 41, Inventory at end of year"
+    endingInventory: Float
+
+    "Capital expenditures, for use in calculating Deprecation"
+    capitalExpenditures: [DateAmount!]
+}
+
+type CryptocurrencyTaxStatement implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    gainsAndLosses: [CryptocurrencyGainOrLoss!]
+}
+
+"""
+Tax information for a single cryptocurrency transaction.
+If reported on Form 1099-B, use Tax1099B and SecurityDetail instead of this entity.
+"""
+type CryptocurrencyGainOrLoss {
+    "Cryptocurrency name (e.g. Bitcoin)"
+    cryptocurrencyName: String
+
+    "Cryptocurrency abbreviation or symbol (e.g. BTC)"
+    symbol: String
+
+    "Quantity (e.g. 0.0125662)"
+    quantity: Float
+
+    "Description of property (1099-B box1a)"
+    saleDescription: String
+
+    "Date acquired (1099-B box 1b)"
+    dateAcquired: Date
+
+    "Acquired on various dates (1099-B box 1b)"
+    variousDatesAcquired: Boolean
+
+    "Date sold or disposed (1099-B box 1c)"
+    dateOfSale: Date
+
+    "Proceeds (not price per share, 1099-B box 1d)"
+    salesPrice: Float
+
+    "Cost or other basis (1099-B box 1e)"
+    costBasis: Float
+
+    "LONG or SHORT (1099-B box 2)"
+    longOrShort: SaleTermType
+}
+"Farm Income Statement for IRS Form 1040 Schedule F"
+type FarmIncomeStatement {
+
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box A, Principal crop or activity"
+    cropOrActivity: String
+
+    "Box 1a, Sales of livestock and other resale items"
+    sales: Float
+
+    "Box 1b, Cost or other basis of livestock or other items"
+    costOfItemsSold: Float
+
+    "Box 2, Sales of livestock, produce, grains, and other products you raised"
+    salesOfRaised: Float
+
+    "Box 3a, Cooperative distributions"
+    coopDistributions: Float
+
+    "Box 4a, Agricultural program payments"
+    agProgramPayments: Float
+
+    "Box 5a, Commodity Credit Corporation (CCC) loans reported under election"
+    cccLoans: Float
+
+    "Box 6a, Crop insurance proceeds and federal crop disaster payments"
+    cropInsuranceProceeds: Float
+
+    "Box 7, Custom hire (machine work) income"
+    customHireIncome: Float
+
+    "Box 8, Other income"
+    otherIncome: DescriptionAmount
+
+    "Box 10, Car and truck expenses"
+    carAndTruck: Float
+
+    "Box 11, Chemicals"
+    chemicals: Float
+
+    "Box 12, Conservation expenses"
+    conservation: Float
+
+    "Box 13, Custom hire (machine work)"
+    customHireExpenses: Float
+
+    "Box 14, Depreciation"
+    depreciation: Float
+
+    "Box 15, Employee benefit programs"
+    employeeBenefitPrograms: Float
+
+    "Box 16, Feed"
+    feed: Float
+
+    "Box 17, Fertilizers and lime"
+    fertilizers: Float
+
+    "Box 18, Freight and trucking"
+    freight: Float
+
+    "Box 19, Gasoline, fuel, and oil"
+    fuel: Float
+
+    "Box 20, Insurance (other than health)"
+    insurance: Float
+
+    "Box 21a, Mortgage Interest"
+    mortgageInterest: Float
+
+    "Box 21b, Other interest"
+    otherInterest: Float
+
+    "Box 22, Labor hired"
+    laborHired: Float
+
+    "Box 23, Pension and profit-sharing plans"
+    pension: Float
+
+    "Box 24a, Rent or lease: Vehicles, machinery, equipment"
+    equipmentRent: Float
+
+    "Box 24b, Rent or lease: Other"
+    otherRent: Float
+
+    "Box 25, Repairs and maintenance"
+    repairs: Float
+
+    "Box 26, Seeds and plants"
+    seeds: Float
+
+    "Box 27, Storage and warehousing"
+    storage: Float
+
+    "Box 28, Supplies"
+    supplies: Float
+
+    "Box 29, Taxes"
+    taxes: Float
+
+    "Box 30, Utilities"
+    utilities: Float
+
+    "Box 31, Veterinary, breeding, and medicine"
+    veterinary: Float
+
+    "Box 32, Other expenses"
+    otherExpenses: DescriptionAmount
+
+    "Capital expenditures, for use in calculating Depreciation"
+    capitalExpenditures: DateAmount
+}
+
+type FarmRentalIncomeStatement implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1, Income from production of livestock, produce, grains, and other crops"
+    incomeFromProduction: Float
+
+    "Box 2a, Cooperative distributions"
+    coopDistributions: Float
+
+    "Box 3a, Agricultural program payments"
+    agProgramPayments: Float
+
+    "Box 4a, Commodity Credit Corporation (CCC) loans reported under election"
+    cccLoans: Float
+
+    "Box 5a, Crop insurance proceeds and federal crop disaster payments"
+    cropInsuranceProceeds: Float
+
+    "Box 6, Other income"
+    otherIncome: DescriptionAmount
+
+    "Box 8, Car and truck expenses"
+    carAndTruck: Float
+
+    "Box 9, Chemicals"
+    chemicals: Float
+
+    "Box 10, Conservation expenses"
+    conservation: Float
+
+    "Box 11, Custom hire (machine work)"
+    customHireExpenses: Float
+
+    "Box 12, Depreciation"
+    depreciation: Float
+
+    "Box 13, Employee benefit programs"
+    employeeBenefitPrograms: Float
+
+    "Box 14, Feed"
+    feed: Float
+
+    "Box 15, Fertilizers and lime"
+    fertilizers: Float
+
+    "Box 16, Freight and trucking"
+    freight: Float
+
+    "Box 17, Gasoline, fuel, and oil"
+    fuel: Float
+
+    "Box 18, Insurance (other than health)"
+    insurance: Float
+
+    "Box 19a, Mortgage Interest"
+    mortgageInterest: Float
+
+    "Box 19b, Other interest"
+    otherInterest: Float
+
+    "Box 20, Labor hired"
+    laborHired: Float
+
+    "Box 21, Pension and profit-sharing plans"
+    pension: Float
+
+    "Box 22a, Rent or lease: Vehicles, machinery, equipment"
+    equipmentRent: Float
+
+    "Box 22b, Rent or lease: Other"
+    otherRent: Float
+
+    "Box 23, Repairs and maintenance"
+    repairs: Float
+
+    "Box 24, Seeds and plants"
+    seeds: Float
+
+    "Box 25, Storage and warehousing"
+    storage: Float
+
+    "Box 26, Supplies"
+    supplies: Float
+
+    "Box 27, Taxes"
+    taxes: Float
+
+    "Box 28, Utilities"
+    utilities: Float
+
+    "Box 29, Veterinary, breeding, and medicine"
+    veterinary: Float
+
+    "Box 30, Other expenses"
+    otherExpenses: DescriptionAmount
+
+    "Capital expenditures, for use in calculating Depreciation"
+    capitalExpenditures: DateAmount
+}
+
+"""
+One of various persons or businesses involved in Form 1042-S reporting. Use
+* `tin` for
+* Box 12a, Withholding Agent EIN,
+* Box 13e, Recipient U.S. TIN,
+* Box 14b, Primary Withholding Agent EIN,
+* Box 15a, Intermediary or flow-through entity EIN,
+* Box 16b, Payer TIN
+* `individualName` or `businessName` for
+* Box 12d, Withholding Agent name,
+* Box 13a, Recipient name,
+* Box 14a, Primary Withholding Agent name,
+* Box 15d, Intermediary or flow-through entity name,
+* Box 16a, Payer name
+* `address.country` for
+* Box 12f, Withholding Agent Country code,
+* Box 13b, Recipient Country code,
+* Box 15f, Intermediary or flow-through entity Country code
+* `address` for
+* Boxes 12h-i, Withholding Agent Address,
+* Boxes 13c-d, Recipient Address,
+* Boxes 15h-i, Intermediary or flow-through entity Address
+"""
+interface IForm1042Agent implements ITaxParty {
+    """
+    Issuer or recipient Tax Identification Number.
+    Usually EIN for issuer and SSN for recipient
+    """
+    tin: String
+
+    """
+    Type of issuer or recipient legal entity, as "BUSINESS" or "INDIVIDUAL".
+    Commonly BUSINESS for issuer and INDIVIDUAL for recipient
+    """
+    partyType: TaxPartyType
+
+    "Individual issuer or recipient name"
+    individualName: IndividualName
+
+    "Business issuer or recipient name"
+    businessName: BusinessName
+
+    "Issuer or recipient address"
+    address: Address
+
+    "Issuer or recipient telephone number"
+    phone: TelephoneNumberPlusExtension
+
+    """
+    Issuer or recipient email address.
+    (Additional information, not part of IRS forms)
+    """
+    email: String
+
+    """"
+    Ch. 3 status code,
+    * Box 12b, Withholding Agent,
+    * Box 13f, Recipient,
+    * Box 15b, Intermediary or flow-through entity,
+    * Box 16d, Payer
+    """
+    ch3StatusCode: String
+
+    """
+    Ch. 4 status code,
+    * Box 12c, Withholding Agent,
+    * Box 13g, Recipient,
+    * Box 15c, Intermediary or flow-through entity,
+    * Box 16e, Payer
+    """
+    ch4StatusCode: String
+
+    """
+    Agent's Global Intermediary Identification Number (GIIN),
+    * Box 12e, Withholding Agent,
+    * Box 13h, Recipient,
+    * Box 15e, Intermediary or flow-through entity,
+    * Box 16c, Payer
+    """
+    giin: String
+
+    """"
+    Foreign tax identification number, if any,
+    * Box 12g, Withholding Agent,
+    * Box 13i, Recipient,
+    * Box 15g, Intermediary or flow-through entity
+    """
+    foreignTin: String
+}
+"""
+One of various persons or businesses involved in Form 1042-S reporting. Use
+* `tin` for
+* Box 12a, Withholding Agent EIN,
+* Box 13e, Recipient U.S. TIN,
+* Box 14b, Primary Withholding Agent EIN,
+* Box 15a, Intermediary or flow-through entity EIN,
+* Box 16b, Payer TIN
+* `individualName` or `businessName` for
+* Box 12d, Withholding Agent name,
+* Box 13a, Recipient name,
+* Box 14a, Primary Withholding Agent name,
+* Box 15d, Intermediary or flow-through entity name,
+* Box 16a, Payer name
+* `address.country` for
+* Box 12f, Withholding Agent Country code,
+* Box 13b, Recipient Country code,
+* Box 15f, Intermediary or flow-through entity Country code
+* `address` for
+* Boxes 12h-i, Withholding Agent Address,
+* Boxes 13c-d, Recipient Address,
+* Boxes 15h-i, Intermediary or flow-through entity Address
+"""
+type Form1042Agent implements ITaxParty, IForm1042Agent {
+    """
+    Issuer or recipient Tax Identification Number.
+    Usually EIN for issuer and SSN for recipient
+    """
+    tin: String
+
+    """
+    Type of issuer or recipient legal entity, as "BUSINESS" or "INDIVIDUAL".
+    Commonly BUSINESS for issuer and INDIVIDUAL for recipient
+    """
+    partyType: TaxPartyType
+
+    "Individual issuer or recipient name"
+    individualName: IndividualName
+
+    "Business issuer or recipient name"
+    businessName: BusinessName
+
+    "Issuer or recipient address"
+    address: Address
+
+    "Issuer or recipient telephone number"
+    phone: TelephoneNumberPlusExtension
+
+    """
+    Issuer or recipient email address.
+    (Additional information, not part of IRS forms)
+    """
+    email: String
+
+    """"
+    Ch. 3 status code,
+    * Box 12b, Withholding Agent,
+    * Box 13f, Recipient,
+    * Box 15b, Intermediary or flow-through entity,
+    * Box 16d, Payer
+    """
+    ch3StatusCode: String
+
+    """
+    Ch. 4 status code,
+    * Box 12c, Withholding Agent,
+    * Box 13g, Recipient,
+    * Box 15c, Intermediary or flow-through entity,
+    * Box 16e, Payer
+    """
+    ch4StatusCode: String
+
+    """
+    Agent's Global Intermediary Identification Number (GIIN),
+    * Box 12e, Withholding Agent,
+    * Box 13h, Recipient,
+    * Box 15e, Intermediary or flow-through entity,
+    * Box 16c, Payer
+    """
+    giin: String
+
+    """"
+    Foreign tax identification number, if any,
+    * Box 12g, Withholding Agent,
+    * Box 13i, Recipient,
+    * Box 15g, Intermediary or flow-through entity
+    """
+    foreignTin: String
+}
+
+"Recipient for Form 1042-S, Boxes 13a-j, 13l"
+type Form1042Recipient implements IForm1042Agent, ITaxParty {
+
+    """
+    Issuer or recipient Tax Identification Number.
+    Usually EIN for issuer and SSN for recipient
+    """
+    tin: String
+
+    """
+    Type of issuer or recipient legal entity, as "BUSINESS" or "INDIVIDUAL".
+    Commonly BUSINESS for issuer and INDIVIDUAL for recipient
+    """
+    partyType: TaxPartyType
+
+    "Individual issuer or recipient name"
+    individualName: IndividualName
+
+    "Business issuer or recipient name"
+    businessName: BusinessName
+
+    "Issuer or recipient address"
+    address: Address
+
+    "Issuer or recipient telephone number"
+    phone: TelephoneNumberPlusExtension
+
+    """
+    Issuer or recipient email address.
+    (Additional information, not part of IRS forms)
+    """
+    email: String
+
+    """"
+    Ch. 3 status code,
+    * Box 12b, Withholding Agent,
+    * Box 13f, Recipient,
+    * Box 15b, Intermediary or flow-through entity,
+    * Box 16d, Payer
+    """
+    ch3StatusCode: String
+
+    """
+    Ch. 4 status code,
+    * Box 12c, Withholding Agent,
+    * Box 13g, Recipient,
+    * Box 15c, Intermediary or flow-through entity,
+    * Box 16e, Payer
+    """
+    ch4StatusCode: String
+
+    """
+    Agent's Global Intermediary Identification Number (GIIN),
+    * Box 12e, Withholding Agent,
+    * Box 13h, Recipient,
+    * Box 15e, Intermediary or flow-through entity,
+    * Box 16c, Payer
+    """
+    giin: String
+
+    """"
+    Foreign tax identification number, if any,
+    * Box 12g, Withholding Agent,
+    * Box 13i, Recipient,
+    * Box 15g, Intermediary or flow-through entity
+    """
+    foreignTin: String
+
+    "Box 13j, Recipient's LOB code, if any"
+    lobCode: String
+
+    "Box 13l, Recipient's date of birth"
+    dateOfBirth: Date
+}
+
+"Used on Form 1095-A Part III"
+type HealthInsuranceCoverage {
+    "Monthly enrollment premiums"
+    enrollmentPremium: Float
+
+    "Monthly second lowest cost silver plan (SLCSP) premium"
+    slcspPremium: Float
+
+    "Monthly advance payment of premium tax credit"
+    advancePremiumTaxCreditPayment: Float
+
+    "Month of coverage"
+    month: CoverageMonth
+}
+
+type HealthInsuranceCoveredIndividual {
+    "Name of responsible individual"
+    name: IndividualName
+
+    "Social security number or other TIN"
+    tin: String
+
+    "Date of birth"
+    dateOfBirth: Date
+
+    "Covered all 12 months"
+    coveredAll12Months: Boolean
+
+    "Months covered"
+    coveredMonths: MonthAbbreviation
+}
+
+type HealthInsuranceMarketplaceCoveredIndividual {
+    "Covered individual name"
+    name: String
+
+    "Covered individual SSN"
+    tin: String
+
+    "Covered individual date of birth"
+    dateOfBirth: Date
+
+    "Coverage start date"
+    policyStartDate: Date
+
+    "Coverage termination date"
+    policyTerminationDate: Date
+}
+
+type LocalTaxWithholding {
+    "Amount of local income tax withheld"
+    taxWithheld: Float
+
+    "Locality name"
+    localityName: String
+
+    "Income amount for local tax purposes"
+    income: Float
+}
+type StateTaxWithholding {
+    "Amount of state income tax withheld"
+    taxWithheld: Float
+
+    "Filer's state tax id"
+    taxId: String
+
+    "Income amount for state tax purposes"
+    income: Float
+}
+type OfferOfHealthInsuranceCoverage {
+    "Offer of Coverage (enter required code)"
+    coverageCode: String
+
+    "Employee required contribution"
+    requiredContribution: Float
+
+    "Section 4980H Safe Harbor and Other Relief (enter code)"
+    section4980HCode: String
+
+    "Box 17, ZIP Code"
+    postalCode: String
+
+    "Month"
+    month: CoverageMonth
+}
+type RentalIncomeStatement implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1a, Physical address of property (street, city, state, ZIP code)"
+    propertyAddress: Address
+
+    "Box 3, Rents received"
+    rents: Float
+
+    "Box 5, Advertising"
+    advertising: Float
+
+    "Box 6, Auto and travel"
+    auto: Float
+
+    "Box 7, Cleaning and maintenance"
+    cleaning: Float
+
+    "Box 8, Commissions"
+    commissions: Float
+
+    "Box 9, Insurance"
+    insurance: Float
+
+    "Box 10, Legal and other professional fees"
+    legal: Float
+
+    "Box 11, Management fees"
+    managementFees: Float
+
+    "Box 12, Mortgage interest paid to banks, etc."
+    mortgageInterest: Float
+
+    "Box 13, Other interest"
+    otherInterest: Float
+
+    "Box 14, Repairs"
+    repairs: Float
+
+    "Box 15, Supplies"
+    supplies: Float
+
+    "Box 16, Taxes"
+    taxes: Float
+
+    "Box 17, Utilities"
+    utilities: Float
+
+    "Box 18, Depreciation"
+    depreciationExpense: Float
+
+    "Box 19, Other expenses"
+    otherExpenses: DescriptionAmount
+
+    "Capital expenditures, for use in calculating Depreciation"
+    capitalExpenditures: DateAmount
+}
+
+type RoyaltyIncomeStatement implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1a, Physical address of property (street, city, state, ZIP code)"
+    propertyAddress: Address
+
+    "Box 3, Royalties received"
+    royalties: Float
+
+    "Box 5, Advertising"
+    advertising: Float
+
+    "Box 6, Auto and travel"
+    auto: Float
+
+    "Box 7, Cleaning and maintenance"
+    cleaning: Float
+
+    "Box 8, Commissions"
+    commissions: Float
+
+    "Box 9, Insurance"
+    insurance: Float
+
+    "Box 10, Legal and other professional fees"
+    legal: Float
+
+    "Box 11, Management fees"
+    managementFees: Float
+
+    "Box 12, Mortgage interest paid to banks, etc."
+    mortgageInterest: Float
+
+    "Box 13, Other interest"
+    otherInterest: Float
+
+    "Box 14, Repairs"
+    repairs: Float
+
+    "Box 15, Supplies"
+    supplies: Float
+
+    "Box 16, Taxes"
+    taxes: Float
+
+    "Box 17, Utilities"
+    utilities: Float
+
+    "Box 18, Depletion"
+    depletionExpense: Float
+
+    "Box 19, Other expenses"
+    otherExpenses: DescriptionAmount
+
+    "Capital expenditures, for use in calculating Depreciation"
+    capitalExpenditures: DateAmount
+}
+
+type SecurityDetail {
+    "Applicable checkbox on Form 8949"
+    checkboxOnForm8949: String
+
+    "Security name"
+    securityName: String
+
+    "Number of shares"
+    numberOfShares: Float
+
+    "Box 1a, Description of property"
+    saleDescription: String
+
+    "Box 1b, Date acquired"
+    dateAcquired: Date
+
+    "Box 1b, Date acquired Various"
+    variousDatesAcquired: Boolean
+
+    "Box 1c, Date sold or disposed"
+    dateOfSale: Date
+
+    "Box 1d, Proceeds (not price per share)"
+    salesPrice: Float
+
+    "Box 1f, Accrued market discount"
+    accruedMarketDiscount: Float
+
+    "Other adjustments (code and amount)"
+    adjustmentCodes: CodeAmount
+
+    "Box 1e, Cost or other basis"
+    costBasis: Float
+
+    """
+    Corrected cost basis. May be supplied in lieu of adjustmentCode code B.
+    If both adjustmentCodes and correctedCostBasis are supplied,
+    costBasis plus adjustmentCode B should equal correctedCostBasis
+    """
+    correctedCostBasis: Float
+
+    "Box 1g, Wash sale loss disallowed"
+    washSaleLossDisallowed: Float
+
+    "Box 2, LONG or SHORT"
+    longOrShort: SaleTermType
+
+    "Box 2, Ordinary"
+    ordinary: Boolean
+
+    "Box 3, Collectibles"
+    collectible: Boolean
+
+    "Box 3, Qualified Opportunity Fund (QOF)"
+    qof: Boolean
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Noncovered security"
+    noncoveredSecurity: Boolean
+
+    "Box 6, Reported to IRS: GROSS or NET"
+    grossOrNet: SaleProceedsType
+
+    "Box 7, Loss not allowed based on proceeds"
+    lossNotAllowed: Boolean
+
+    "Box 12, Basis reported to IRS"
+    basisReported: Boolean
+
+    "Boxes 14-16, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "CUSIP number"
+    cusip: String
+
+    "Foreign account tax compliance"
+    foreignAccountTaxCompliance: Boolean
+
+    """
+    To indicate gain or loss resulted from option expiration.
+    If salesPrice (1d, proceeds) is zero, use PURCHASED.
+    If costBasis (1e) is zero, use GRANTED.
+    """
+    expiredOption: ExpiredOptionType
+
+    "Type of investment sale"
+    investmentSaleType: InvestmentSaleType
+}
+
+type StateAndLocalTaxWithholding {
+    "State two-digit code"
+    stateCode: Region
+
+    "Amount of state income tax withheld"
+    state: StateTaxWithholding
+
+    "Amount of local income tax withheld, if any"
+    local: LocalTaxWithholding
+}
+type Tax1041K1 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Final K-1"
+    finalK1: Boolean
+
+    "Amended K-1"
+    amendedK1: Boolean
+
+    "Fiscal year begin date"
+    fiscalYearBegin: Date
+
+    "Fiscal year end date"
+    fiscalYearEnd: Date
+
+    "Box D, Check if Form 1041-T was filed"
+    form1041T: Boolean
+
+    "Box D, and enter the date it was filed"
+    date1041T: Date
+
+    "Box E, Check if this is the final Form 1041 for the estate or trust"
+    final1041: Boolean
+
+    "Box H, Domestic beneficiary"
+    domestic: Boolean
+
+    "Box H, Foreign beneficiary"
+    foreign: Boolean
+
+    "Box 1, Interest income"
+    interestIncome: Float
+
+    "Box 2a, Ordinary dividends"
+    ordinaryDividends: Float
+
+    "Box 2b, Qualified dividends"
+    qualifiedDividends: Float
+
+    "Box 3, Net short-term capital gain"
+    netShortTermGain: Float
+
+    "Box 4a, Net long-term capital gain"
+    netLongTermGain: Float
+
+    "Box 4b, 28% rate gain"
+    gain28Rate: Float
+
+    "Box 4c, Unrecaptured section 1250 gain"
+    unrecaptured1250Gain: Float
+
+    "Box 5, Other portfolio and nonbusiness income"
+    otherPortfolioIncome: Float
+
+    "Box 6, Ordinary business income"
+    ordinaryBusinessIncome: Float
+
+    "Box 7, Net rental real estate income"
+    netRentalRealEstateIncome: Float
+
+    "Box 8, Other rental income"
+    otherRentalIncome: Float
+
+    "Box 9, Directly apportioned deductions"
+    directlyApportionedDeductions: CodeAmount
+
+    "Box 10, Estate tax deduction"
+    estateTaxDeduction: Float
+
+    "Box 11, Final year deductions"
+    finalYearDeductions: CodeAmount
+
+    "Box C, Fiduciary's name and address"
+    fiduciary: TaxParty
+
+    "Box 12, Alternative minimum tax adjustment"
+    amtAdjustments: CodeAmount
+
+    "Box 13, Credits and credit recapture"
+    credits: CodeAmount
+
+    "Box 14, Other information"
+    otherInfo: CodeAmount
+}
+
+type Tax1042S implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Unique form identifier"
+    formId: String
+
+    "Amended"
+    amended: Boolean
+
+    "Amendment number"
+    amendmentNumber: Int
+
+    "Box 1, Income code"
+    incomeTypeCode: String
+
+    "Box 2, Gross income"
+    grossIncome: Float
+
+    "Box 3, Chapter indicator"
+    chapterIndicator: String
+
+    "Box 3a, Exemption code"
+    ch3ExemptionCode: String
+
+    "Box 3b, Tax rate"
+    ch3TaxRate: Float
+
+    "Box 4a, Exemption code"
+    ch4ExemptionCode: String
+
+    "Box 4b, Tax rate"
+    ch4TaxRate: Float
+
+    "Box 5, Withholding allowance"
+    withholdingAllowance: Float
+
+    "Box 6, Net income"
+    netIncome: Float
+
+    "Box 7a, Federal tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 7b, Check if federal tax withheld was not deposited with the IRS because escrow procedures were applied"
+    escrowProceduresApplied: Boolean
+
+    "Box 7c, Check if withholding occurred in subsequent year with respect to a partnership interest"
+    subsequentYear: Boolean
+
+    "Box 8, Tax withheld by other agents"
+    otherAgentsTaxWithheld: Float
+
+    "Box 9, Overwithheld tax repaid to recipient pursuant to adjustment procedures"
+    recipientRepaidAmount: Float
+
+    "Box 10, Total withholding credit"
+    totalTaxWithholdingCredit: Float
+
+    "Box 11, Tax paid by withholding agent (amounts not withheld)"
+    withholdingAgentTaxPaid: Float
+
+    "Boxes 12a-i, Withholding agent"
+    withholdingAgent: Form1042Agent
+
+    "Boxes 13a-j, 13l, Recipient for Form 1042-S"
+    form1042Recipient: Form1042Recipient
+
+    "Box 13k, Recipient account number"
+    accountNumber: String
+
+    "Boxes 14a-b, Primary Withholding Agent"
+    primary: Form1042Agent
+
+    "Box 15, Check if pro-rata basis reporting"
+    prorataBasisReporting: Boolean
+
+    "Boxes 15a-i, Intermediary or flow thru entity"
+    intermediary: Form1042Agent
+
+    "Boxes 16a-e, Payer"
+    payer: Form1042Agent
+
+    "Box 17, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+}
+
+type Tax1065K1 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Fiscal year begin date"
+    fiscalYearBegin: Date
+
+    "Fiscal year end data"
+    fiscalYearEnd: Date
+
+    "Final K-1"
+    finalK1: Boolean
+
+    "Amended K-1"
+    amendedK1: Boolean
+
+    "Box C, IRS Center where partnership filed return"
+    irsCenter: String
+
+    "Box D, Check if this is a publicly traded partnership (PTP)"
+    publiclyTraded: Boolean
+
+    "Box G, General partner or LLC member-manager"
+    generalPartner: Boolean
+
+    "Box G, Limited partner or other LLC member"
+    limitedPartner: Boolean
+
+    "Box H1, Domestic partner"
+    domestic: Boolean
+
+    "Box H1, Foreign partner"
+    foreign: Boolean
+
+    "Box H2, Check if the partner is a disregarded entity (DE), and enter the partner's TIN and Name"
+    disregardedEntity: Boolean
+
+    "Box H2, Disregarded entity partner's TIN"
+    disregardedEntityTin: String
+
+    "Box H2, Disregarded entity partner's Name"
+    disregardedEntityName: String
+
+    "Box I1, What type of entity is this partner?"
+    entityType: String
+
+    "Box I2, If this partner is a retirement plan (IRA/SEP/Keogh/etc.), check here"
+    retirementPlan: Boolean
+
+    "Box J, Partner's share of profit - beginning"
+    profitShareBegin: Float
+
+    "Box J, Partner's share of profit - ending"
+    profitShareEnd: Float
+
+    "Box J, Partner's share of loss - beginning"
+    lossShareBegin: Float
+
+    "Box J, Partner's share of loss - ending"
+    lossShareEnd: Float
+
+    "Box J, Partner's share of capital - beginning"
+    capitalShareBegin: Float
+
+    "Box J, Partner's share of capital - ending"
+    capitalShareEnd: Float
+
+    "Box J, Check if decrease is due to sale or exchange of partnership interest. Deprecated and no longer used beginning tax year 2023. Use `decreaseDueToSale` and `decreaseDueToExchange` instead"
+    decreaseDueToSaleOrExchange: Boolean
+
+    "Box J, Check if decrease is due to sale of partnership interest"
+    decreaseDueToSale: Boolean
+
+    "Box J, Check if decrease is due to exchange of partnership interest"
+    decreaseDueToExchange: Boolean
+
+    "Box K1, Partner's share of liabilities - beginning - nonrecourse"
+    nonrecourseLiabilityShareBegin: Float
+
+    "Box K1, Partner's share of liabilities - ending - nonrecourse"
+    nonrecourseLiabilityShareEnd: Float
+
+    "Box K1, Partner's share of liabilities - beginning - qualified nonrecourse financing"
+    qualifiedLiabilityShareBegin: Float
+
+    "Box K1, Partner's share of liabilities - ending - qualified nonrecourse financing"
+    qualifiedLiabilityShareEnd: Float
+
+    "Box K1, Partner's share of liabilities - beginning - recourse"
+    recourseLiabilityShareBegin: Float
+
+    "Box K1, Partner's share of liabilities - ending - recourse"
+    recourseLiabilityShareEnd: Float
+
+    "Box K2, Check this box if item K1 includes liability amounts from lower tier partnerships"
+    includesLowerTierLiability: Boolean
+
+    "Box K3, Check if any of the above liability is subject to guarantees or other payment obligations by the partner"
+    liabilitySubjectToGuarantees: Boolean
+
+    "Box L, Partner's capital account analysis - Beginning capital account"
+    capitalAccountBegin: Float
+
+    "Box L, Partner's capital account analysis - Capital contributed during the year"
+    capitalAccountContributions: Float
+
+    "Box L, Partner's capital account analysis - Current year net income (loss)"
+    capitalAccountIncrease: Float
+
+    "Box L, Partner's capital account analysis - Other increase (decrease)"
+    capitalAccountOther: Float
+
+    "Box L, Partner's capital account analysis - Withdrawals & distributions"
+    capitalAccountWithdrawals: Float
+
+    "Box L, Partner's capital account analysis - Ending capital account"
+    capitalAccountEnd: Float
+
+    "Box M, Did the partner contribute property with a built-in gain or loss? - Yes"
+    builtInGain: Boolean
+
+    "Box N, Partner's Share of Net Unrecognized Section 704(c) Gain or (Loss) - beginning"
+    unrecognizedSection704Begin: Float
+
+    "Box N, Partner's Share of Net Unrecognized Section 704(c) Gain or (Loss) - ending"
+    unrecognizedSection704End: Float
+
+    "Box 1, Ordinary business income (loss)"
+    ordinaryIncome: Float
+
+    "Box 2, Net rental real estate income (loss)"
+    netRentalRealEstateIncome: Float
+
+    "Box 3, Other net rental income (loss)"
+    otherRentalIncome: Float
+
+    "Box 4a, Guaranteed payments for services"
+    guaranteedPaymentServices: Float
+
+    "Box 4b, Guaranteed payments for capital"
+    guaranteedPaymentCapital: Float
+
+    "Box 4c, Total guaranteed payments"
+    guaranteedPayment: Float
+
+    "Box 5, Interest income"
+    interestIncome: Float
+
+    "Box 6a, Ordinary dividends"
+    ordinaryDividends: Float
+
+    "Box 6b, Qualified dividends"
+    qualifiedDividends: Float
+
+    "Box 6c, Dividend equivalents"
+    dividendEquivalents: Float
+
+    "Box 7, Royalties"
+    royalties: Float
+
+    "Box 8, Net short-term capital gain (loss)"
+    netShortTermGain: Float
+
+    "Box 9a, Net long-term capital gain (loss)"
+    netLongTermGain: Float
+
+    "Box 9b, Collectibles (28%) gain (loss)"
+    collectiblesGain: Float
+
+    "Box 9c, Unrecaptured section 1250 gain"
+    unrecaptured1250Gain: Float
+
+    "Box 10, Net section 1231 gain (loss)"
+    net1231Gain: Float
+
+    "Box 11, Other income"
+    otherIncome: CodeAmount
+
+    "Box 12, Section 179 deduction"
+    section179Deduction: Float
+
+    "Box 13, Other deductions"
+    otherDeductions: CodeAmount
+
+    "Box 14, Self-employment earnings (loss)"
+    selfEmployment: CodeAmount
+
+    "Box 15, Credits"
+    credits: CodeAmount
+
+    "Box 16, Schedule K-3 is attached"
+    scheduleK3: Boolean
+
+    "Box 17, Alternative minimum tax (AMT) items"
+    amtItems: CodeAmount
+
+    "Box 18, Tax-exempt income and nondeductible expenses"
+    taxExemptIncome: CodeAmount
+
+    "Box 19, Distributions"
+    distributions: CodeAmount
+
+    "Box 20, Other information"
+    otherInfo: CodeAmount
+
+    "Box 21, Foreign taxes paid or accrued"
+    foreignTaxPaid: Float
+
+    "Box 22, More than one activity for at-risk purposes"
+    multipleAtRiskActivities: Boolean
+
+    "Box 23, More than one activity for passive activity purposes"
+    multiplePassiveActivities: Boolean
+}
+type Tax1095A implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1, Marketplace identifier"
+    marketplaceId: String
+
+    "Box 2, Marketplace-assigned policy number"
+    marketplacePolicyNumber: String
+
+    "Box 3, Policy issuer's name"
+    policyIssuerName: String
+
+    "Box 6, Recipient's date of birth"
+    recipientDateOfBirth: Date
+
+    "Box 7, Recipient's spouse's name"
+    spouseName: String
+
+    "Box 8, Recipient's spouse's SSN"
+    spouseTin: String
+
+    "Box 9, Recipient's spouse's date of birth"
+    spouseDateOfBirth: Date
+
+    "Box 10, Policy start date"
+    policyStartDate: Date
+
+    "Box 11, Policy termination date"
+    policyTerminationDate: Date
+
+    "Boxes 16+, Covered Individuals"
+    coveredIndividuals: HealthInsuranceMarketplaceCoveredIndividual
+
+    "Boxes 21-33, Coverage Information"
+    coverages: HealthInsuranceCoverage
+}
+
+type Tax1095B implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 3, Date of birth (if SSN or other TIN is not available)"
+    responsibleDateOfBirth: Date
+
+    "Box 8, Enter letter identifying Origin of the Health Coverage"
+    originOfHealthCoverageCode: String
+
+    "Boxes 10-15, Employer EIN, name and address"
+    employer: TaxParty
+
+    "Boxes 23+, Covered Individuals"
+    coveredIndividuals: HealthInsuranceCoveredIndividual
+}
+
+type Tax1095C implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Self Insured Coverage"
+    selfInsuredCoverage: Boolean
+
+    "Boxes 14-16, Employee Offer of Coverage"
+    offersOfCoverage: OfferOfHealthInsuranceCoverage
+
+    "Employee's Age on January 1"
+    employeeAge: Int
+
+    "Plan Start Month"
+    planStartMonth: Int
+
+    "Boxes 17+, Covered Individuals"
+    coveredIndividuals: HealthInsuranceCoveredIndividual
+}
+
+type Tax1097Btc implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    """
+    Form 1097-BTC issuer is: Issuer of bond or its agent filing current year
+    Form 1097-BTC for credit being reported
+    """
+    filingForCredit: Boolean
+
+    """
+    Form 1097-BTC issuer is: An entity or a person that received or should have received
+    a current year Form 1097-BTC and is distributing part or all of that credit to others
+    """
+    asNominee: Boolean
+
+    "Box 1, Total"
+    total: Float
+
+    "Box 2a, Code"
+    bondCode: String
+
+    "Box 2b, Unique Identifier"
+    uniqueId: String
+
+    "Box 3, Bond type"
+    bondType: String
+
+    "Box 5, Amounts by month"
+    amounts: MonthAmount
+
+    "Box 6, Comments"
+    comments: String
+}
+
+type Tax1098 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 9, Number of properties securing the mortgage"
+    mortgagedProperties: Int
+
+    "Box 10, Other (property tax)"
+    otherInformation: String
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Mortgage interest received from borrower"
+    mortgageInterest: Float
+
+    "Box 2, Outstanding mortgage principal"
+    outstandingPrincipal: Float
+
+    "Box 3, Mortgage origination date"
+    originationDate: Date
+
+    "Box 4, Refund of overpaid interest"
+    overpaidRefund: Float
+
+    "Box 5, Mortgage insurance premiums"
+    mortgageInsurance: Float
+
+    "Box 6, Points paid on purchase of principal residence"
+    pointsPaid: Float
+
+    "Box 7, Is address of property securing mortgage same as PAYER'S/BORROWER'S address"
+    isPropertyAddressSameAsBorrowerAddress: Boolean
+
+    "Box 11, Mortgage acquisition date"
+    acquisitionDate: Date
+
+    "Box 8, Address of property securing mortgage"
+    propertyAddress: Address
+
+    "Box 10, Property tax"
+    propertyTax: Float
+
+    "Box 8, Description of property securing mortgage, if property securing mortgage has no address"
+    propertyDescription: String
+}
+
+type Tax1098C implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1, Date of contribution"
+    dateOfContribution: Date
+
+    "Box 2a, Odometer mileage"
+    odometerMileage: Int
+
+    "Box 2b, Year"
+    carYear: Int
+
+    "Box 2c, Make"
+    make: String
+
+    "Box 2d, Model"
+    model: String
+
+    "Box 3, Vehicle or other identification number"
+    vin: String
+
+    "Box 4a, Donee certifies that vehicle was sold in arm's length transaction to unrelated party"
+    armsLengthTransaction: Boolean
+
+    "Box 4b, Date of sale"
+    dateOfSale: Date
+
+    "Box 4c, Gross proceeds from sale (see instructions)"
+    grossProceeds: Float
+
+    "Box 5a, Donee certifies that vehicle will not be transferred for money, other property, or services before completion of material improvements or significant intervening use"
+    notTransferredBefore: Boolean
+
+    "Box 5b, Donee certifies that vehicle is to be transferred to a needy individual for significantly below fair market value in furtherance of donee's charitable purpose"
+    needyIndividual: Boolean
+
+    "Box 5c, Donee certifies the following detailed description of material improvements or significant intervening use and duration of use"
+    descriptionOfImprovements: String
+
+    "Box 6a, Did you provide goods or services in exchange for the vehicle? Yes"
+    goodsInExchange: Boolean
+
+    "Box 6b, Value of goods and services provided in exchange for the vehicle"
+    valueOfExchange: Float
+
+    "Box 6c, If this box is checked, donee certifies that the goods and services consisted solely of intangible religious benefits"
+    intangibleReligious: Boolean
+
+    "Box 6c, Describe the goods and services, if any, that were provided"
+    descriptionOfGoods: String
+
+    "Box 7, Under the law, the donor may not claim a deduction of more than $500 for this vehicle if this box is checked"
+    maxDeductionApplies: Boolean
+}
+
+type Tax1098E implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Student loan interest received by lender"
+    studentLoanInterest: Float
+
+    "Box 2, If checked, box 1 does not include loan origination fee made before September 1, 2004"
+    box1ExcludesFees: Boolean
+}
+
+type Tax1098Ma implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Total State HFA (Housing Finance Agency) and homeowner mortgage payments"
+    totalMortgagePayments: Float
+
+    "Box 2, State HFA (Housing Finance Agency) mortgage assistance payments"
+    mortgageAssistancePayments: Float
+
+    "Box 3, Homeowner mortgage payments"
+    homeownerMortgagePayments: Float
+}
+
+type Tax1098Q implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Plan number"
+    planNumber: String
+
+    "Plan name"
+    planName: String
+
+    "Plan sponsor's EIN"
+    planSponsorId: String
+
+    "Box 1a, Annuity amount on start date"
+    annuityAmount: Float
+
+    "Box 1b, Annuity start date"
+    startDate: Date
+
+    "Box 2, Start date may be accelerated"
+    canBeAccelerated: Boolean
+
+    "Box 3, Total premiums"
+    totalPremiums: Float
+
+    "Box 4, Fair market value of qualifying longevity annuity contract (FMV of QLAC)"
+    fairMarketValue: Float
+
+    "Box 5, Total monthly premiums paid for the contract and date of the last payment in the month"
+    premiums: DateAmount
+}
+
+type Tax1098T implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    """
+    By checking the box in STUDENT'S TIN, filer is
+    making a true and accurate certification under penalty of
+    perjury that they have complied with standards promulgated
+    by the Secretary for obtaining such individual's TIN
+    """
+    studentTinCertification: Boolean
+
+    "Account number"
+    accountNumber: String
+
+    "Box 8, Check if at least half-time student"
+    halfTime: Boolean
+
+    "Box 1, Payments received for qualified tuition and related expenses"
+    qualifiedTuitionFees: Float
+
+    "Box 4, Adjustments made for a prior year"
+    adjustmentPriorYear: Float
+
+    "Box 5, Scholarships or grants"
+    scholarship: Float
+
+    "Box 6, Adjustments to scholarships or grants for a prior year"
+    adjustScholarship: Float
+
+    "Box 7, Check if the amount in box 1 or box 2 includes amounts for an academic period beginning January - March of next year"
+    includeJanMar: Boolean
+
+    "Box 9, Check if graduate student"
+    graduate: Boolean
+
+    "Box 10, Insurance contract reimbursement / refund"
+    insuranceRefund: Float
+}
+
+type Tax1099A implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Date of lender's acquisition or knowledge of abandonment"
+    dateOfAcquisition: Date
+
+    "Box 2, Balance of principal outstanding"
+    principalBalance: Float
+
+    "Box 4, Fair market value property"
+    fairMarketValue: Float
+
+    "Box 5, If checked, the borrower was personally liable for repayment of the debt"
+    personallyLiable: Boolean
+
+    "Box 6, Description of property"
+    propertyDescription: String
+}
+
+type Tax1099B implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Boxes 14-16, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 8, Profit or (loss) realized in current year on closed contracts"
+    profitOnClosedContracts: Float
+
+    "Box 9, Unrealized profit or loss on open contracts at end of last year"
+    unrealizedProfitOpenContractsBegin: Float
+
+    "Box 10, Unrealized profit or loss on open contracts at end of current year"
+    unrealizedProfitOpenContractsEnd: Float
+
+    "Box 11, Aggregate profit or (loss) on contracts"
+    aggregateProfitOnContracts: Float
+
+    "Box 13, Bartering"
+    bartering: Float
+
+    "Boxes 1-3, 5-7, 12, Security details"
+    securityDetails: SecurityDetail
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099C implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Date of identifiable event"
+    dateOfEvent: Date
+
+    "Box 2, Amount of debt discharged"
+    amountDischarged: Float
+
+    "Box 3, Interest if included in box 2"
+    interestIncluded: Float
+
+    "Box 4, Debt description"
+    debtDescription: String
+
+    "Box 5, If checked, the debtor was personally liable for repayment of the debt"
+    personallyLiable: Boolean
+
+    "Box 6, Identifiable debt code"
+    debtCode: String
+
+    "Box 7, Fair market value of property"
+    fairMarketValue: Float
+}
+type Tax1099Cap implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Date of sale or exchange"
+    dateOfSale: Date
+
+    "Box 2, Aggregate amount received"
+    aggregateAmount: Float
+
+    "Box 3, Number of shares exchanged"
+    numberOfShares: Float
+
+    "Box 4, Classes of stock exchanged"
+    stockClasses: String
+}
+
+type Tax1099ConsolidatedStatement implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Interest paid on margin account"
+    marginInterestPaid: Float
+
+    "Payment in lieu of dividends paid"
+    paymentInLieuPaid: Float
+
+    "Advisor fees paid"
+    advisorFeesPaid: Float
+
+    "Other fees paid"
+    otherFeesPaid: Float
+
+    "Accrued Interest Paid offset to form 1099-INT box 1, Corporate bond interest income"
+    corporateBondInterestPaid: Float
+
+    "Accrued Interest Paid offset to form 1099-INT box 3, accrued U.S. Treasury Notes and Bonds interest income"
+    usBondInterestPaid: Float
+
+    "Accrued Interest Paid offset to form 1099-INT box 8, tax exempt interest income from municipal bonds"
+    taxExemptInterestPaid: Float
+
+    "Accrued Interest Paid offset to form 1099-INT box 9, tax exempt interest income from Private Activity Bonds"
+    specifiedPabInterestPaid: Float
+}
+
+type Tax1099Div implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1a, Total ordinary dividends"
+    ordinaryDividends: Float
+
+    "Box 1b, Qualified dividends"
+    qualifiedDividends: Float
+
+    "Box 2a, Total capital gain distributions"
+    totalCapitalGain: Float
+
+    "Box 2b, Unrecaptured Section 1250 gain"
+    unrecaptured1250Gain: Float
+
+    "Box 2c, Section 1202 gain"
+    section1202Gain: Float
+
+    "Box 2d, Collectibles (28%) gain"
+    collectiblesGain: Float
+
+    "Box 2e, Section 897 ordinary dividends"
+    section897Dividends: Float
+
+    "Box 2f, Section 897 capital gain"
+    section897CapitalGain: Float
+
+    "Box 3, Nondividend distributions"
+    nonTaxableDistribution: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Section 199A dividends"
+    section199ADividends: Float
+
+    "Box 6, Investment expenses"
+    investmentExpenses: Float
+
+    "Box 7, Foreign tax paid"
+    foreignTaxPaid: Float
+
+    "Box 8, Foreign country or U.S. possession"
+    foreignCountry: String
+
+    "Box 9, Cash liquidation distributions"
+    cashLiquidation: Float
+
+    "Box 10, Noncash liquidation distributions"
+    nonCashLiquidation: Float
+
+    "Box 11, FATCA filing requirement"
+    foreignAccountTaxCompliance: Boolean
+
+    "Box 12, Exempt-interest dividends"
+    taxExemptInterestDividend: Float
+
+    "Box 13, Specified private activity bond interest dividends"
+    specifiedPabInterestDividend: Float
+
+    "Boxes 14-16, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Foreign income information"
+    foreignIncomes: DescriptionAmount
+
+    "Tax exempt income state information"
+    stateTaxExemptIncomes: DescriptionAmount
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099G implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Unemployment compensation"
+    unemploymentCompensation: Float
+
+    "Box 2, State or local income tax refunds, credits, or offsets"
+    taxRefund: Float
+
+    "Box 3, Box 2 amount is for tax year"
+    refundYear: Int
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, RTAA payments"
+    rtaaPayments: Float
+
+    "Box 6, Taxable grants"
+    grants: Float
+
+    "Box 7, Agriculture payments"
+    agriculturePayments: Float
+
+    "Box 8, If checked, box 2 is trade or business income"
+    businessIncome: Boolean
+
+    "Box 9, Market gain"
+    marketGain: Float
+
+    "Boxes 10-11, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099H implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1, Amount of HCTC advance payments"
+    advancePayments: Float
+
+    "Box 2, Number of months HCTC advance payments and reimbursement credits paid to you"
+    numberOfMonths: Int
+
+    "Boxes 3-14, Payments by month"
+    payments: MonthAmount
+}
+
+type Tax1099Int implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "FATCA filing requirement"
+    foreignAccountTaxCompliance: Boolean
+
+    "Account number"
+    accountNumber: String
+
+    "Payer's RTN"
+    payerRtn: String
+
+    "Box 1, Interest income"
+    interestIncome: Float
+
+    "Box 2, Early withdrawal penalty"
+    earlyWithdrawalPenalty: Float
+
+    "Box 3, Interest on U.S. Savings Bonds and Treasury obligations"
+    usBondInterest: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Investment expenses"
+    investmentExpenses: Float
+
+    "Box 6, Foreign tax paid"
+    foreignTaxPaid: Float
+
+    "Box 7, Foreign country or U.S. possession"
+    foreignCountry: String
+
+    "Box 8, Tax-exempt interest"
+    taxExemptInterest: Float
+
+    "Box 9, Specified private activity bond interest"
+    specifiedPabInterest: Float
+
+    "Box 10, Market discount"
+    marketDiscount: Float
+
+    "Box 11, Bond premium"
+    bondPremium: Float
+
+    "Box 12, Bond premium on Treasury obligations"
+    usBondPremium: Float
+
+    "Box 13, Bond premium on tax-exempt bond"
+    taxExemptBondPremium: Float
+
+    "Box 14, Tax-exempt bond CUSIP no."
+    cusipNumber: String
+
+    "Boxes 15-17, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Supplemental foreign income amount information (description is country)"
+    foreignIncomes: DescriptionAmount
+
+    "Supplemental tax-exempt income by state (description is state)"
+    stateTaxExemptIncome: DescriptionAmount
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099K implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Check to indicate if FILER is a Payment Settlement Entity (PSE)"
+    paymentSettlementEntity: Boolean
+
+    "Check to indicate if FILER is an Electronic Payment Facilitator (EPF) / Other third party"
+    electronicPaymentFacilitator: Boolean
+
+    "Check to indicate transactions reported are: Payment card"
+    paymentCard: Boolean
+
+    "Check to indicate transactions reported are: Third party network"
+    thirdPartyNetwork: Boolean
+
+    "PSE's name"
+    pseName: String
+
+    "PSE's phone number"
+    psePhone: TelephoneNumberPlusExtension
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1a, Gross amount of payment card/third party network transactions"
+    grossAmount: Float
+
+    "Box 1b, Card Not Present Transactions"
+    cardNotPresent: Float
+
+    "Box 2, Merchant category code"
+    merchantCategoryCode: String
+
+    "Box 3, Number of purchase transactions"
+    numberOfTransactions: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Monthly amounts"
+    monthAmounts: MonthAmount
+
+    "Boxes 6-8, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099Ls implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Policy number"
+    policyNumber: String
+
+    "Box 1, Amount paid to payment recipient"
+    payment: Float
+
+    "Box 2, Date of sale"
+    saleDate: Date
+
+    "Issuer's name"
+    issuerName: String
+
+    """
+    Acquirer's information contact name, street address, city or town,
+    state or province, country, ZIP or foreign postal code, and telephone
+    no. (If different from ACQUIRER)
+    """
+    contactNameAddress: NameAddressPhone
+}
+
+type Tax1099Ltc implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Gross long-term care benefits paid"
+    ltcBenefits: Float
+
+    "Box 2, Accelerated death benefits paid"
+    deathBenefits: Float
+
+    "Box 3, Per diem"
+    perDiem: Boolean
+
+    "Box 3, Reimbursed amount"
+    reimbursedAmount: Boolean
+
+    "INSURED'S taxpayer identification no."
+    insuredId: String
+
+    "Insured name and address"
+    insuredNameAddress: NameAddress
+
+    "Box 4, Qualified contract"
+    qualifiedContract: Boolean
+
+    "Box 5, Chronically ill"
+    chronicallyIll: Boolean
+
+    "Box 5, Terminally ill"
+    terminallyIll: Boolean
+
+    "Date certified"
+    dateCertified: Date
+}
+
+type Tax1099Misc implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Rents"
+    rents: Float
+
+    "Box 2, Royalties"
+    royalties: Float
+
+    "Box 3, Other income"
+    otherIncome: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Fishing boat proceeds"
+    fishingBoatProceeds: Float
+
+    "Box 6, Medical and health care payments"
+    medicalHealthPayment: Float
+
+    "Box 7, Payer made direct sales of $5,000 or more of consumer products to a buyer (recipient) for resale"
+    payerDirectSales: Boolean
+
+    "Box 8, Substitute payments in lieu of dividends or interest"
+    substitutePayments: Float
+
+    "Box 9, Crop insurance proceeds"
+    cropInsurance: Float
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+
+    "Box 10, Gross proceeds paid to an attorney"
+    grossAttorney: Float
+
+    "Box 11, Fish purchased for resale"
+    fishPurchased: Float
+
+    "Box 12, Section 409A deferrals"
+    section409ADeferrals: Float
+
+    "Box 13, FATCA filing requirement"
+    foreignAccountTaxCompliance: Boolean
+
+    "Box 14, Excess golden parachute payments"
+    excessGolden: Float
+
+    "Box 15, Nonqualified Deferred Compensation"
+    nonQualifiedDeferredCompensation: Float
+
+    "Boxes 16-18, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+}
+
+type Tax1099Nec implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+
+    "Box 1, Nonemployee compensation"
+    nonEmployeeCompensation: Float
+
+    "Box 2, Payer made direct sales of $5,000 or more of consumer products to a buyer (recipient) for resale"
+    payerDirectSales: Boolean
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Boxes 5-7, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+}
+
+type Tax1099Oid implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "FATCA filing requirement"
+    foreignAccountTaxCompliance: Boolean
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Original issue discount"
+    originalIssueDiscount: Float
+
+    "Box 2, Other periodic interest"
+    otherPeriodicInterest: Float
+
+    "Box 3, Early withdrawal penalty"
+    earlyWithdrawalPenalty: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Market discount"
+    marketDiscount: Float
+
+    "Box 6, Acquisition premium"
+    acquisitionPremium: Float
+
+    "Box 7, Description"
+    oidDescription: String
+
+    "Box 8, Original issue discount on U.S. Treasury obligations"
+    discountOnTreasuryObligations: Float
+
+    "Box 9, Investment expenses"
+    investmentExpenses: Float
+
+    "Box 10, Bond premium"
+    bondPremium: Float
+
+    "Box 11, Tax-exempt OID"
+    taxExemptOid: Float
+
+    "Boxes 12-14, State and Local tax withheld"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Supplemental: State name and tax-exempt OID by state"
+    stateExemptOid: DescriptionAmount
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099Patr implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Patronage dividends"
+    patronageDividends: Float
+
+    "Box 2, Nonpatronage distributions"
+    nonpatronageDistributions: Float
+
+    "Box 3, Per-unit retain allocations"
+    perUnitRetainAllocations: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Redemption of nonqualified notices and retain allocations"
+    redemption: Float
+
+    "Box 6, Section 199A(g) deduction"
+    section199Deduction: Float
+
+    "Box 7, Qualified payments"
+    qualifiedPayments: Float
+
+    "Box 8, Section 199A(a) qualified items"
+    section199QualifiedItems: Float
+
+    "Box 9, Section 199A(a) SSTB (Specified Service Trade or Business) items"
+    section199SstbItems: Float
+
+    "Box 10, Investment credit"
+    investmentCredit: Float
+
+    "Box 11, Work opportunity credit"
+    workOpportunityCredit: Float
+
+    "Box 12, Other credits and deductions"
+    otherCreditsAndDeductions: Float
+
+    "Box 13, Specified Cooperative"
+    specifiedCoop: Boolean
+
+    "State and Local tax withholding, from IRS's IRIS schema"
+    stateAndLocal: StateAndLocalTaxWithholding
+
+    "Second TIN Notice"
+    secondTinNotice: Boolean
+}
+
+type Tax1099Q implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Gross distribution"
+    grossDistribution: Float
+
+    "Box 2, Earnings"
+    earnings: Float
+
+    "Box 3, Basis"
+    basis: Float
+
+    "Box 4, Trustee-to-trustee transfer"
+    trusteeToTrustee: Boolean
+
+    "Box 5a, Qualified tuition plan - Private"
+    tuitionPlanPrivate: Boolean
+
+    "Box 5b, Qualified tuition plan - Public"
+    tuitionPlanPublic: Boolean
+
+    "Box 5c, Coverdell ESA"
+    coverdellEsa: Boolean
+
+    "Box 6, If this box is checked, the recipient is not the designated beneficiary"
+    recipientIsNotBeneficiary: Boolean
+
+    "If fair market value (FMV) is included, see Pub. 970, Tax Benefits for Education, for how to figure earnings"
+    fairMarketValue: Float
+}
+
+type Tax1099Qa implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Gross distribution"
+    grossDistribution: Float
+
+    "Box 2, Earnings"
+    earnings: Float
+
+    "Box 3, Basis"
+    basis: Float
+
+    "Box 4, Program-to-program transfer"
+    programTransfer: Boolean
+
+    "Box 5, Check if ABLE account terminated in current year"
+    terminated: Boolean
+
+    "Box 6, Check if the recipient is not the designated beneficiary"
+    notBeneficiary: Boolean
+}
+
+type Tax1099R implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 10, Amount allocable to IRR within 5 years"
+    allocableToIRR: Float
+
+    """
+    Box 11, First year of designated Roth contributions. A four-digit year.
+    """
+    firstYearOfRoth: Int
+
+    "Account number"
+    recipientAccountNumber: String
+
+    "Box 1, Gross distribution"
+    grossDistribution: Float
+
+    "Box 2a, Taxable amount"
+    taxableAmount: Float
+
+    "Box 2b, Taxable amount not determined"
+    taxableAmountNotDetermined: Boolean
+
+    "Box 2c, Total distribution"
+    totalDistribution: Boolean
+
+    "Box 3, Capital gain"
+    capitalGain: Float
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Employee contributions"
+    employeeContributions: Float
+
+    "Box 6, Net unrealized appreciation"
+    netUnrealizedAppreciation: Float
+
+    "Box 7, Distribution codes"
+    distributionCodes: [String!]
+
+    "Box 7b, IRA/SEP/SIMPLE"
+    iraSepSimple: Boolean
+
+    "Box 8, Other"
+    otherAmount: Float
+
+    "Box 8, Other percent"
+    otherPercent: Float
+
+    "Box 9a, Your percent of total distribution"
+    yourPercentOfTotal: Float
+
+    "Box 9b, Total employee contributions"
+    totalEmployeeContributions: Float
+
+    "Box 12, FATCA filing requirement"
+    foreignAccountTaxCompliance: Boolean
+
+    "Box 13, Date of payment"
+    dateOfPayment: Date
+
+    "Boxes 14-19, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+}
+
+type Tax1099S implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account or escrow number"
+    accountNumber: String
+
+    "Box 1, Date of closing"
+    dateOfClosing: Date
+
+    "Box 2, Gross proceeds"
+    grossProceeds: Float
+
+    "Box 3, Address or legal description"
+    addressOrLegalDescription: String
+
+    "Box 4, Transferor received or will receive property or services as part of the consideration (if checked)"
+    receivedOtherConsideration: Boolean
+
+    "Box 5, If checked, transferor is a foreign person (nonresident alien, foreign partnership, foreign estate, or foreign trust)"
+    foreignPerson: Boolean
+
+    "Box 6, Buyer's part of real estate tax"
+    realEstateTax: Float
+}
+
+type Tax1099Sa implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Gross distribution"
+    grossDistribution: Float
+
+    "Box 2, Earnings on excess contributions"
+    earnings: Float
+
+    "Box 3, Distribution code"
+    distributionCode: String
+
+    "Box 4, FMV on date of death"
+    fairMarketValue: Float
+
+    "Box 5a, HSA"
+    hsa: Boolean
+
+    "Box 5b, Archer MSA"
+    archerAccount: Boolean
+
+    "Box 5c, Medicare Advantage (MA) MSA"
+    medicalSavingsAccount: Boolean
+}
+
+type Tax1099Sb implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Policy number"
+    policyNumber: String
+
+    "Box 1, Investment in contract"
+    contractInvestment: Float
+
+    "Box 2, Surrender amount"
+    surrenderAmount: Float
+
+    """
+    Issuer's information contact name, street address, city or town, state
+    or province, country, ZIP or foreign postal code, and telephone no. (if
+    different from ISSUER)
+    """
+    contactNameAddress: NameAddressPhone
+}
+
+type Tax1120SK1 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Final K-1"
+    finalK1: Boolean
+
+    "Amended K-1"
+    amendedK1: Boolean
+
+    "Fiscal year begin date"
+    fiscalYearBegin: Date
+
+    "Fiscal year end date"
+    fiscalYearEnd: Date
+
+    "Box C, IRS Center where corporation filed return"
+    irsCenter: String
+
+    "Box D, Corporation's total number of shares, Beginning of tax year"
+    corporationBeginningShares: Float
+
+    "Box D, Corporation's total number of shares, End of tax year"
+    corporationEndingShares: Float
+
+    "Box G, Current year allocation percentage"
+    percentOwnership: Float
+
+    "Box H, Shareholder's number of shares, Beginning of tax year"
+    beginningShares: Float
+
+    "Box H, Shareholder's number of shares, End of tax year"
+    endingShares: Float
+
+    "Box I, Loans from shareholder, Beginning of tax year"
+    beginningLoans: Float
+
+    "Box I, Loans from shareholder, Ending of tax year"
+    endingLoans: Float
+
+    "Box 1, Ordinary business income (loss)"
+    ordinaryIncome: Float
+
+    "Box 2, Net rental real estate income (loss)"
+    netRentalRealEstateIncome: Float
+
+    "Box 3, Other net rental income (loss)"
+    otherRentalIncome: Float
+
+    "Box 4, Interest income"
+    interestIncome: Float
+
+    "Box 5a, Ordinary dividends"
+    ordinaryDividends: Float
+
+    "Box 5b, Qualified dividends"
+    qualifiedDividends: Float
+
+    "Box 6, Royalties"
+    royalties: Float
+
+    "Box 7, Net short-term capital gain (loss)"
+    netShortTermGain: Float
+
+    "Box 8a, Net long-term capital gain (loss)"
+    netLongTermGain: Float
+
+    "Box 8b, Collectibles (28%) gain (loss)"
+    collectiblesGain: Float
+
+    "Box 8c, Unrecaptured section 1250 gain"
+    unrecaptured1250Gain: Float
+
+    "Box 9, Net section 1231 gain (loss)"
+    net1231Gain: Float
+
+    "Box 10, Other income (loss)"
+    otherIncome: CodeAmount
+
+    "Box 11, Section 179 deduction"
+    section179Deduction: Float
+
+    "Box 12, Other deductions"
+    otherDeductions: CodeAmount
+
+    "Box 13, Credits"
+    credits: CodeAmount
+
+    "Box 14, Schedule K-3 is attached"
+    scheduleK3: Boolean
+
+    "Box 15, Alternative minimum tax (AMT) items"
+    amtItems: CodeAmount
+
+    "Box 16, Items affecting shareholder basis"
+    basisItems: CodeAmount
+
+    "Box 17, Other information"
+    otherInfo: CodeAmount
+
+    "Box 18, More than one activity for at-risk purposes"
+    multipleAtRiskActivities: Boolean
+
+    "Box 19, More than one activity for passive activity purposes"
+    multiplePassiveActivities: Boolean
+}
+
+type Tax2439 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Fiscal year begin date"
+    fiscalYearBegin: Date
+
+    "Fiscal year end date"
+    fiscalYearEnd: Date
+
+    "Box 1a, Total undistributed long-term capital gains"
+    undistributedLongTermCapitalGains: Float
+
+    "Box 1b, Unrecaptured section 1250 gain"
+    unrecaptured1250Gain: Float
+
+    "Box 1c, Section 1202 gain"
+    section1202Gain: Float
+
+    "Box 1d, Collectibles (28%) gain"
+    collectiblesGain: Float
+
+    "Box 2, Tax paid by the RIC or REIT on the box 1a gains"
+    taxPaid: Float
+}
+
+type Tax3921 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Date option granted"
+    optionGrantDate: Date
+
+    "Box 2, Date option exercised"
+    optionExerciseDate: Date
+
+    "Box 3, Exercise price per share"
+    exercisePrice: Float
+
+    "Box 4, Fair market value per share on exercise date"
+    exerciseMarketValue: Float
+
+    "Box 5, Number of shares transferred"
+    numberOfShares: Float
+
+    "Box 6, If other than TRANSFEROR, name, address and tin of corporation whose stock is being transferred"
+    corporation: TaxParty
+}
+
+type Tax3922 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Date option granted"
+    optionGrantDate: Date
+
+    "Box 2, Date option exercised"
+    optionExerciseDate: Date
+
+    "Box 3, Fair market value per share on grant date"
+    grantMarketValue: Float
+
+    "Box 4, Fair market value per share on exercise date"
+    exerciseMarketValue: Float
+
+    "Box 5, Exercise price paid per share"
+    exercisePrice: Float
+
+    "Box 6, Number of shares transferred"
+    numberOfShares: Float
+
+    "Box 7, Date legal title transferred"
+    titleTransferDate: Date
+
+    "Box 8, Exercise price per share determined as if the option was exercised on the option granted date"
+    grantDateExercisePrice: Float
+}
+
+type Tax5227K1 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Final K-1"
+    finalK1: Boolean
+
+    "Amended K-1"
+    amendedK1: Boolean
+
+    "Fiscal year begin date"
+    fiscalYearBegin: Date
+
+    "Fiscal year end date"
+    fiscalYearEnd: Date
+
+    "Box D, Check if Form 1041-T was filed"
+    form1041T: Boolean
+
+    "Box D, and enter the date it was filed"
+    date1041T: Date
+
+    "Box E, Check if this is the final Form 1041 for the estate or trust"
+    final1041: Boolean
+
+    "Box H, Domestic beneficiary"
+    domestic: Boolean
+
+    "Box H, Foreign beneficiary"
+    foreign: Boolean
+
+    "Box 1, Interest income"
+    interestIncome: Float
+
+    "Box 2a, Ordinary dividends"
+    ordinaryDividends: Float
+
+    "Box 2b, Qualified dividends"
+    qualifiedDividends: Float
+
+    "Box 3, Net short-term capital gain"
+    netShortTermGain: Float
+
+    "Box 4a, Net long-term capital gain"
+    netLongTermGain: Float
+
+    "Box 4b, 28% rate gain"
+    gain28Rate: Float
+
+    "Box 4c, Unrecaptured section 1250 gain"
+    unrecaptured1250Gain: Float
+
+    "Box 5, Other portfolio and nonbusiness income"
+    otherPortfolioIncome: Float
+
+    "Box 6, Ordinary business income"
+    ordinaryBusinessIncome: Float
+
+    "Box 7, Net rental real estate income"
+    netRentalRealEstateIncome: Float
+
+    "Box 8, Other rental income"
+    otherRentalIncome: Float
+
+    "Box 9, Directly apportioned deductions"
+    directlyApportionedDeductions: CodeAmount
+
+    "Box 10, Estate tax deduction"
+    estateTaxDeduction: Float
+
+    "Box 11, Final year deductions"
+    finalYearDeductions: CodeAmount
+
+    "Box C, Fiduciary's name and address"
+    fiduciary: TaxParty
+
+    "Box 12, Alternative minimum tax adjustment"
+    amtAdjustments: CodeAmount
+
+    "Box 13, Credits and credit recapture"
+    credits: CodeAmount
+
+    "Box 14, Other information"
+    otherInfo: CodeAmount
+}
+
+type Tax5498 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, IRA contributions"
+    iraContributions: Float
+
+    "Box 2, Rollover contributions"
+    rolloverContributions: Float
+
+    "Box 3, Roth IRA conversion amount"
+    rothIraConversion: Float
+
+    "Box 4, Recharacterized contributions"
+    recharacterizedContributions: Float
+
+    "Box 5, Fair market value of account"
+    fairMarketValue: Float
+
+    "Box 6, Life insurance cost included in box 1"
+    lifeInsuranceCost: Float
+
+    "Box 7a, IRA"
+    ira: Boolean
+
+    "Box 7b, SEP"
+    sep: Boolean
+
+    "Box 7c, SIMPLE"
+    simple: Boolean
+
+    "Box 7d, Roth IRA"
+    rothIra: Boolean
+
+    "Box 8, SEP contributions"
+    sepContributions: Float
+
+    "Box 9, SIMPLE contributions"
+    simpleContributions: Float
+
+    "Box 10, Roth IRA contributions"
+    rothIraContributions: Float
+
+    "Box 11, If checked, required minimum distribution for next year"
+    rmdNextYear: Boolean
+
+    "Box 12a, RMD date"
+    rmdDate: Date
+
+    "Box 12b, RMD amount"
+    rmdAmount: Float
+
+    "Box 13a, Postponed contribution"
+    postponedContribution: Float
+
+    "Box 13b, Year"
+    postponedYear: Int
+
+    "Box 13c, Code"
+    postponedCode: String
+
+    "Box 14a, Repayments"
+    repayments: Float
+
+    "Box 14b, Code"
+    repayCode: String
+
+    "Box 15a, FMV of certain specified assets"
+    fmvSpecifiedAssets: Float
+
+    "Box 15b, Code(s)"
+    specifiedCodes: String
+}
+
+type Tax5498Esa implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Coverdell ESA contributions"
+    coverdellEsaContributions: Float
+
+    "Box 2, Rollover contributions"
+    rolloverContributions: Float
+}
+
+type Tax5498Qa implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, ABLE contributions"
+    ableContributions: Float
+
+    "Box 2, ABLE to ABLE Rollovers"
+    rollovers: Float
+
+    "Box 3, Cumulative contributions"
+    cumulativeContributions: Float
+
+    "Box 4, Fair market value"
+    fairMarketValue: Float
+
+    "Box 5, Check if account opened in current tax year"
+    openedInTaxYear: Boolean
+
+    "Box 6, Basis of eligibility"
+    basisOfDisabilityCode: String
+
+    "Box 7, Code"
+    typeOfDisabilityCode: String
+}
+
+type Tax5498Sa implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Account number"
+    accountNumber: String
+
+    "Box 1, Employee or self-employed person's Archer MSA contributions made in current and following years for current year"
+    msaContributions: Float
+
+    "Box 2, Total contributions made in current year"
+    totalContributions: Float
+
+    "Box 3, Total HSA or Archer MSA contributions made in following year for current year"
+    totalPostYearEnd: Float
+
+    "Box 4, Rollover contributions"
+    rolloverContributions: Float
+
+    "Box 5, Fair market value of HSA, Archer MSA, or Medicare Advantage (MA) MSA"
+    fairMarketValue: Float
+
+    "Box 6a, HSA"
+    hsa: Boolean
+
+    "Box 6b, Archer MSA"
+    archer: Boolean
+
+    "Box 6c, Medicare Advantage (MA) MSA"
+    maMsa: Boolean
+}
+
+"IRS Form 8888 Direct Deposit Information"
+type TaxRefundDirectDeposit {
+    "Name of institution"
+    institutionName: String
+
+    "Routing transit number"
+    rtn: String
+
+    "Account number"
+    accountNumber: String
+
+    "Account nickname"
+    accountNickName: String
+}
+
+type TaxW2 implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Control number"
+    controlNumber: String
+
+    "Box 1, Wages, tips, other compensation"
+    wages: Float
+
+    "Box 2, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 3, Social security wages"
+    socialSecurityWages: Float
+
+    "Box 4, Social security tax withheld"
+    socialSecurityTaxWithheld: Float
+
+    "Box 5, Medicare wages and tips"
+    medicareWages: Float
+
+    "Box 6, Medicare tax withheld"
+    medicareTaxWithheld: Float
+
+    "Box 7, Social security tips"
+    socialSecurityTips: Float
+
+    "Box 8, Allocated tips"
+    allocatedTips: Float
+
+    "Box 10, Dependent care benefits"
+    dependentCareBenefit: Float
+
+    "Box 11, Nonqualified plans"
+    nonQualifiedPlan: Float
+
+    "Box 12, Codes and amounts"
+    codes: CodeAmount
+
+    "Box 13, Statutory employee"
+    statutory: Boolean
+
+    "Box 13, Retirement plan"
+    retirementPlan: Boolean
+
+    "Box 13, Third-party sick pay"
+    thirdPartySickPay: Boolean
+
+    "Employee Stock Purchase Plan Qualified Disposition amount"
+    esppQualified: Float
+
+    "Employee Stock Purchase Plan Nonqualified Disposition amount"
+    esppNonQualified: Float
+
+    "Box 14, Other descriptions and amounts"
+    other: DescriptionAmount
+
+    "Boxes 15-20, State and Local tax withholding"
+    stateAndLocal: StateAndLocalTaxWithholding
+}
+
+type TaxW2C implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box e, Corrected SSN and/or name"
+    correctedTinOrName: Boolean
+
+    "Box f, Employee's previously reported SSN"
+    previousEmployeeTin: String
+
+    "Box g, Employee's previously reported name"
+    previousEmployeeName: IndividualName
+
+    "Boxes 1-20 of Previously reported Wage and Tax Statement"
+    originalW2: TaxW2
+
+    "Boxes 1-20 of Correct information Wage and Tax Statement"
+    correctedW2: TaxW2
+}
+
+type TaxW2G implements Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    "Box 1, Reportable winnings"
+    winnings: Float
+
+    "Box 2, Date won"
+    dateWon: Date
+
+    "Box 3, Type of wager"
+    typeOfWager: String
+
+    "Box 4, Federal income tax withheld"
+    federalTaxWithheld: Float
+
+    "Box 5, Transaction"
+    transaction: String
+
+    "Box 6, Race"
+    race: String
+
+    "Box 7, Winnings from identical wagers"
+    identicalWinnings: Float
+
+    "Box 8, Cashier"
+    cashier: String
+
+    "Box 10, Window"
+    window: String
+
+    "Box 11, First I.D."
+    firstId: String
+
+    "Box 12, Second I.D."
+    secondId: String
+
+    "Boxes 13-18, State and Local tax withholding, use income fields for state (box 14) and local (box 16) winnings amounts"
+    stateAndLocal: StateAndLocalTaxWithholding
+}
+
+interface ITaxData {
+    "Business Income Statement for IRS Form 1040 Schedule C"
+    businessIncomeStatement: BusinessIncomeStatement
+
+    "Cryptocurrency Tax Statement list"
+    cryptocurrencyTaxStatement: CryptocurrencyTaxStatement
+
+    "Farm Income Statement for IRS Form 1040 Schedule F"
+    farmIncomeStatement: FarmIncomeStatement
+
+    "Farm Rental Income Statement for IRS Form 4835"
+    farmRentalIncomeStatement: FarmRentalIncomeStatement
+
+    "Rental Income Statement for IRS Form 1040 Schedule E"
+    rentalIncomeStatement: RentalIncomeStatement
+
+    "Royalty Income Statement for IRS Form 1040 Schedule E"
+    royaltyIncomeStatement: RoyaltyIncomeStatement
+
+    "Beneficiary's Share of Income, Deductions, Credits, etc."
+    tax1041K1: Tax1041K1
+
+    "Foreign Person's U.S. Source Income Subject to Withholding"
+    tax1042S: Tax1042S
+
+    "Partner's Share of Income, Deductions, Credits, etc."
+    tax1065K1: Tax1065K1
+
+    "Partner's Share of Income, Deductions, Credits, etc. - International"
+    tax1065K3: Tax1065K3
+
+    "Health Insurance Marketplace Statement"
+    tax1095A: Tax1095A
+
+    "Health Coverage"
+    tax1095B: Tax1095B
+
+    "Employer-Provided Health Insurance Offer and Coverage"
+    tax1095C: Tax1095C
+
+    "Bond Tax Credit"
+    tax1097Btc: Tax1097Btc
+
+    "Mortgage Interest Statement"
+    tax1098: Tax1098
+
+    "Contributions of Motor Vehicles, Boats, and Airplanes"
+    tax1098C: Tax1098C
+
+    "Student Loan Interest Statement"
+    tax1098E: Tax1098E
+
+    "Mortgage Assistance Payments"
+    tax1098Ma: Tax1098Ma
+
+    "Qualifying Longevity Annuity Contract Information"
+    tax1098Q: Tax1098Q
+
+    "Tuition Statement"
+    tax1098T: Tax1098T
+
+    "Acquisition or Abandonment of Secured Property"
+    tax1099A: Tax1099A
+
+    "Proceeds From Broker and Barter Exchange Transactions"
+    tax1099B: Tax1099B
+
+    "Cancellation of Debt"
+    tax1099C: Tax1099C
+
+    "Changes in Corporate Control and Capital Structure"
+    tax1099Cap: Tax1099Cap
+
+    "Consolidated Statement for combined IRS Form 1099s"
+    tax1099ConsolidatedStatement: Tax1099ConsolidatedStatement
+
+    "Dividends and Distributions"
+    tax1099Div: Tax1099Div
+
+    "Certain Government Payments"
+    tax1099G: Tax1099G
+
+    "Health Coverage Tax Credit (HCTC) Advance Payments"
+    tax1099H: Tax1099H
+
+    "Interest Income"
+    tax1099Int: Tax1099Int
+
+    "Merchant Card and Third-Party Network Payments"
+    tax1099K: Tax1099K
+
+    "Reportable Life Insurance Sale"
+    tax1099Ls: Tax1099Ls
+
+    "Long-Term Care and Accelerated Death Benefits"
+    tax1099Ltc: Tax1099Ltc
+
+    "Miscellaneous Income"
+    tax1099Misc: Tax1099Misc
+
+    "Nonemployee Compensation"
+    tax1099Nec: Tax1099Nec
+
+    "Original Issue Discount"
+    tax1099Oid: Tax1099Oid
+
+    "Taxable Distributions Received From Cooperatives"
+    tax1099Patr: Tax1099Patr
+
+    "Payments From Qualified Education Programs"
+    tax1099Q: Tax1099Q
+
+    "Distributions From ABLE Accounts"
+    tax1099Qa: Tax1099Qa
+
+    "Distributions from Pensions, Annuities, Retirement or Profit-Sharing Plans, IRAs, Insurance Contracts, etc."
+    tax1099R: Tax1099R
+
+    "Proceeds From Real Estate Transactions"
+    tax1099S: Tax1099S
+
+    "Distributions From an HSA, Archer MSA, or Medicare Advantage MSA"
+    tax1099Sa: Tax1099Sa
+
+    "Seller's Investment in Life Insurance Contract"
+    tax1099Sb: Tax1099Sb
+
+    "Shareholder's Share of Income, Deductions, Credits, etc."
+    tax1120SK1: Tax1120SK1
+
+    "Notice to Shareholder of Undistributed Long-Term Capital Gains"
+    tax2439: Tax2439
+
+    "Exercise of an Incentive Stock Option Under Section 422(b)"
+    tax3921: Tax3921
+
+    "Transfer of Stock Acquired Through an Employee Stock Purchase Plan under Section 423(c)"
+    tax3922: Tax3922
+
+    "Split-Interest Trust Beneficiary's schedule K-1"
+    tax5227K1: Tax5227K1
+
+    "IRA Contribution Information"
+    tax5498: Tax5498
+
+    "Coverdell ESA Contribution Information"
+    tax5498Esa: Tax5498Esa
+
+    "ABLE Account Contribution Information"
+    tax5498Qa: Tax5498Qa
+
+    "HSA, Archer MSA, or Medicare Advantage MSA Information"
+    tax5498Sa: Tax5498Sa
+
+    "Wage and Tax Statement"
+    taxW2: TaxW2
+
+    "IRS form W-2c, Corrected Wage and Tax Statement"
+    taxW2C: TaxW2C
+
+    "Certain Gambling Winnings"
+    taxW2G: TaxW2G
+
+    "Tax refund direct deposit information"
+    taxRefundDirectDeposit: TaxRefundDirectDeposit
+}
+
+type TaxData implements ITaxData {
+    "Business Income Statement for IRS Form 1040 Schedule C"
+    businessIncomeStatement: BusinessIncomeStatement
+
+    "Cryptocurrency Tax Statement list"
+    cryptocurrencyTaxStatement: CryptocurrencyTaxStatement
+
+    "Farm Income Statement for IRS Form 1040 Schedule F"
+    farmIncomeStatement: FarmIncomeStatement
+
+    "Farm Rental Income Statement for IRS Form 4835"
+    farmRentalIncomeStatement: FarmRentalIncomeStatement
+
+    "Rental Income Statement for IRS Form 1040 Schedule E"
+    rentalIncomeStatement: RentalIncomeStatement
+
+    "Royalty Income Statement for IRS Form 1040 Schedule E"
+    royaltyIncomeStatement: RoyaltyIncomeStatement
+
+    "Beneficiary's Share of Income, Deductions, Credits, etc."
+    tax1041K1: Tax1041K1
+
+    "Foreign Person's U.S. Source Income Subject to Withholding"
+    tax1042S: Tax1042S
+
+    "Partner's Share of Income, Deductions, Credits, etc."
+    tax1065K1: Tax1065K1
+
+    "Partner's Share of Income, Deductions, Credits, etc. - International"
+    tax1065K3: Tax1065K3
+
+    "Health Insurance Marketplace Statement"
+    tax1095A: Tax1095A
+
+    "Health Coverage"
+    tax1095B: Tax1095B
+
+    "Employer-Provided Health Insurance Offer and Coverage"
+    tax1095C: Tax1095C
+
+    "Bond Tax Credit"
+    tax1097Btc: Tax1097Btc
+
+    "Mortgage Interest Statement"
+    tax1098: Tax1098
+
+    "Contributions of Motor Vehicles, Boats, and Airplanes"
+    tax1098C: Tax1098C
+
+    "Student Loan Interest Statement"
+    tax1098E: Tax1098E
+
+    "Mortgage Assistance Payments"
+    tax1098Ma: Tax1098Ma
+
+    "Qualifying Longevity Annuity Contract Information"
+    tax1098Q: Tax1098Q
+
+    "Tuition Statement"
+    tax1098T: Tax1098T
+
+    "Acquisition or Abandonment of Secured Property"
+    tax1099A: Tax1099A
+
+    "Proceeds From Broker and Barter Exchange Transactions"
+    tax1099B: Tax1099B
+
+    "Cancellation of Debt"
+    tax1099C: Tax1099C
+
+    "Changes in Corporate Control and Capital Structure"
+    tax1099Cap: Tax1099Cap
+
+    "Consolidated Statement for combined IRS Form 1099s"
+    tax1099ConsolidatedStatement: Tax1099ConsolidatedStatement
+
+    "Dividends and Distributions"
+    tax1099Div: Tax1099Div
+
+    "Certain Government Payments"
+    tax1099G: Tax1099G
+
+    "Health Coverage Tax Credit (HCTC) Advance Payments"
+    tax1099H: Tax1099H
+
+    "Interest Income"
+    tax1099Int: Tax1099Int
+
+    "Merchant Card and Third-Party Network Payments"
+    tax1099K: Tax1099K
+
+    "Reportable Life Insurance Sale"
+    tax1099Ls: Tax1099Ls
+
+    "Long-Term Care and Accelerated Death Benefits"
+    tax1099Ltc: Tax1099Ltc
+
+    "Miscellaneous Income"
+    tax1099Misc: Tax1099Misc
+
+    "Nonemployee Compensation"
+    tax1099Nec: Tax1099Nec
+
+    "Original Issue Discount"
+    tax1099Oid: Tax1099Oid
+
+    "Taxable Distributions Received From Cooperatives"
+    tax1099Patr: Tax1099Patr
+
+    "Payments From Qualified Education Programs"
+    tax1099Q: Tax1099Q
+
+    "Distributions From ABLE Accounts"
+    tax1099Qa: Tax1099Qa
+
+    "Distributions from Pensions, Annuities, Retirement or Profit-Sharing Plans, IRAs, Insurance Contracts, etc."
+    tax1099R: Tax1099R
+
+    "Proceeds From Real Estate Transactions"
+    tax1099S: Tax1099S
+
+    "Distributions From an HSA, Archer MSA, or Medicare Advantage MSA"
+    tax1099Sa: Tax1099Sa
+
+    "Seller's Investment in Life Insurance Contract"
+    tax1099Sb: Tax1099Sb
+
+    "Shareholder's Share of Income, Deductions, Credits, etc."
+    tax1120SK1: Tax1120SK1
+
+    "Notice to Shareholder of Undistributed Long-Term Capital Gains"
+    tax2439: Tax2439
+
+    "Exercise of an Incentive Stock Option Under Section 422(b)"
+    tax3921: Tax3921
+
+    "Transfer of Stock Acquired Through an Employee Stock Purchase Plan under Section 423(c)"
+    tax3922: Tax3922
+
+    "Split-Interest Trust Beneficiary's schedule K-1"
+    tax5227K1: Tax5227K1
+
+    "IRA Contribution Information"
+    tax5498: Tax5498
+
+    "Coverdell ESA Contribution Information"
+    tax5498Esa: Tax5498Esa
+
+    "ABLE Account Contribution Information"
+    tax5498Qa: Tax5498Qa
+
+    "HSA, Archer MSA, or Medicare Advantage MSA Information"
+    tax5498Sa: Tax5498Sa
+
+    "Wage and Tax Statement"
+    taxW2: TaxW2
+
+    "IRS form W-2c, Corrected Wage and Tax Statement"
+    taxW2C: TaxW2C
+
+    "Certain Gambling Winnings"
+    taxW2G: TaxW2G
+
+    "Tax refund direct deposit information"
+    taxRefundDirectDeposit: TaxRefundDirectDeposit
+}
+
+
+type TaxDataForQR implements ITaxData {
+    "Business Income Statement for IRS Form 1040 Schedule C"
+    businessIncomeStatement: BusinessIncomeStatement
+
+    "Cryptocurrency Tax Statement list"
+    cryptocurrencyTaxStatement: CryptocurrencyTaxStatement
+
+    "Farm Income Statement for IRS Form 1040 Schedule F"
+    farmIncomeStatement: FarmIncomeStatement
+
+    "Farm Rental Income Statement for IRS Form 4835"
+    farmRentalIncomeStatement: FarmRentalIncomeStatement
+
+    "Rental Income Statement for IRS Form 1040 Schedule E"
+    rentalIncomeStatement: RentalIncomeStatement
+
+    "Royalty Income Statement for IRS Form 1040 Schedule E"
+    royaltyIncomeStatement: RoyaltyIncomeStatement
+
+    "Beneficiary's Share of Income, Deductions, Credits, etc."
+    tax1041K1: Tax1041K1
+
+    "Foreign Person's U.S. Source Income Subject to Withholding"
+    tax1042S: Tax1042S
+
+    "Partner's Share of Income, Deductions, Credits, etc."
+    tax1065K1: Tax1065K1
+
+    "Partner's Share of Income, Deductions, Credits, etc. - International"
+    tax1065K3: Tax1065K3
+
+    "Health Insurance Marketplace Statement"
+    tax1095A: Tax1095A
+
+    "Health Coverage"
+    tax1095B: Tax1095B
+
+    "Employer-Provided Health Insurance Offer and Coverage"
+    tax1095C: Tax1095C
+
+    "Bond Tax Credit"
+    tax1097Btc: Tax1097Btc
+
+    "Mortgage Interest Statement"
+    tax1098: Tax1098
+
+    "Contributions of Motor Vehicles, Boats, and Airplanes"
+    tax1098C: Tax1098C
+
+    "Student Loan Interest Statement"
+    tax1098E: Tax1098E
+
+    "Mortgage Assistance Payments"
+    tax1098Ma: Tax1098Ma
+
+    "Qualifying Longevity Annuity Contract Information"
+    tax1098Q: Tax1098Q
+
+    "Tuition Statement"
+    tax1098T: Tax1098T
+
+    "Acquisition or Abandonment of Secured Property"
+    tax1099A: Tax1099A
+
+    "Proceeds From Broker and Barter Exchange Transactions"
+    tax1099B: Tax1099B
+
+    "Cancellation of Debt"
+    tax1099C: Tax1099C
+
+    "Changes in Corporate Control and Capital Structure"
+    tax1099Cap: Tax1099Cap
+
+    "Consolidated Statement for combined IRS Form 1099s"
+    tax1099ConsolidatedStatement: Tax1099ConsolidatedStatement
+
+    "Dividends and Distributions"
+    tax1099Div: Tax1099Div
+
+    "Certain Government Payments"
+    tax1099G: Tax1099G
+
+    "Health Coverage Tax Credit (HCTC) Advance Payments"
+    tax1099H: Tax1099H
+
+    "Interest Income"
+    tax1099Int: Tax1099Int
+
+    "Merchant Card and Third-Party Network Payments"
+    tax1099K: Tax1099K
+
+    "Reportable Life Insurance Sale"
+    tax1099Ls: Tax1099Ls
+
+    "Long-Term Care and Accelerated Death Benefits"
+    tax1099Ltc: Tax1099Ltc
+
+    "Miscellaneous Income"
+    tax1099Misc: Tax1099Misc
+
+    "Nonemployee Compensation"
+    tax1099Nec: Tax1099Nec
+
+    "Original Issue Discount"
+    tax1099Oid: Tax1099Oid
+
+    "Taxable Distributions Received From Cooperatives"
+    tax1099Patr: Tax1099Patr
+
+    "Payments From Qualified Education Programs"
+    tax1099Q: Tax1099Q
+
+    "Distributions From ABLE Accounts"
+    tax1099Qa: Tax1099Qa
+
+    "Distributions from Pensions, Annuities, Retirement or Profit-Sharing Plans, IRAs, Insurance Contracts, etc."
+    tax1099R: Tax1099R
+
+    "Proceeds From Real Estate Transactions"
+    tax1099S: Tax1099S
+
+    "Distributions From an HSA, Archer MSA, or Medicare Advantage MSA"
+    tax1099Sa: Tax1099Sa
+
+    "Seller's Investment in Life Insurance Contract"
+    tax1099Sb: Tax1099Sb
+
+    "Shareholder's Share of Income, Deductions, Credits, etc."
+    tax1120SK1: Tax1120SK1
+
+    "Notice to Shareholder of Undistributed Long-Term Capital Gains"
+    tax2439: Tax2439
+
+    "Exercise of an Incentive Stock Option Under Section 422(b)"
+    tax3921: Tax3921
+
+    "Transfer of Stock Acquired Through an Employee Stock Purchase Plan under Section 423(c)"
+    tax3922: Tax3922
+
+    "Split-Interest Trust Beneficiary's schedule K-1"
+    tax5227K1: Tax5227K1
+
+    "IRA Contribution Information"
+    tax5498: Tax5498
+
+    "Coverdell ESA Contribution Information"
+    tax5498Esa: Tax5498Esa
+
+    "ABLE Account Contribution Information"
+    tax5498Qa: Tax5498Qa
+
+    "HSA, Archer MSA, or Medicare Advantage MSA Information"
+    tax5498Sa: Tax5498Sa
+
+    "Wage and Tax Statement"
+    taxW2: TaxW2
+
+    "IRS form W-2c, Corrected Wage and Tax Statement"
+    taxW2C: TaxW2C
+
+    "Certain Gambling Winnings"
+    taxW2G: TaxW2G
+
+    "Tax refund direct deposit information"
+    taxRefundDirectDeposit: TaxRefundDirectDeposit
+    """
+    Financial Data Exchange (FDX) schema Version number (e.g. "V5.0")
+    """
+    version: String
+
+    "The FDX registration ID of company or software generating this tax data"
+    softwareId: String
+}
+
+interface Tax {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "True to indicate this is a corrected tax form"
+    corrected: Boolean
+
+    "Source account"
+    account: Account
+
+    "Long-term persistent id for this tax form"
+    taxFormId: ID
+
+    "Date of production or delivery of the tax form"
+    taxFormDate: Date
+
+    "Additional explanation text or content about this tax form"
+    additionalInformation: String
+
+    "Enumerated name of the tax form entity"
+    taxFormType: TaxFormType
+
+    "Issuer's name, address, phone, and TIN"
+    issuer: ITaxParty
+
+    "Recipient's name, address, phone, and TIN"
+    recipient: ITaxParty
+
+    "Additional boxes on the tax form"
+    attributes: [TaxFormAttribute!]!
+
+    # Omit error (handled at GraphQL layer) and links
+}
+
+type TaxFormAttribute {
+    name: String
+    value: String
+    "Box number on a tax form, if any"
+    boxNumber: String
+
+    "Tax form code for the given box number, if any"
+    code: String
+}
+
+"Code and amount pair used on IRS W-2, K-1, etc."
+type CodeAmount {
+    code: String
+    amount: Float
+}
+
+type DateAmount {
+    "Date of amount. When used in 1098-Q, date of last payment in month"
+    date: Date
+
+    "Description of amount. When used in 1098-Q, may use MonthAbbreviation"
+    description: String
+
+    "Amount of payment or receipt. When used in 1098-Q, monthly total"
+    amount: Float
+}
+"Description and amount pair used on IRS W-2, etc."
+type DescriptionAmount {
+    description: String
+    amount: String
+}
+
+"Month and amount pair, used on IRS Form 1099-K, etc."
+type MonthAmount {
+    month: MonthAbbreviation
+    amount: Float
+}
+
+"Individual or business name with address"
+
+enum TaxFormType {
+    BusinessIncomeStatement
+    CryptocurrencyTaxStatement
+    FarmIncomeStatement
+    FarmRentalIncomeStatement
+    RentalIncomeStatement
+    RoyaltyIncomeStatement
+    Tax1041K1
+    Tax1042S
+    Tax1065K1
+    Tax1065K3
+    Tax1095A
+    Tax1095B
+    Tax1095C
+    Tax1097Btc
+    Tax1098
+    Tax1098C
+    Tax1098E
+    Tax1098Ma
+    Tax1098Q
+    Tax1098T
+    Tax1099A
+    Tax1099B
+    Tax1099C
+    Tax1099Cap
+    Tax1099ConsolidatedStatement
+    Tax1099Div
+    Tax1099G
+    Tax1099H
+    Tax1099Int
+    Tax1099K
+    Tax1099Ls
+    Tax1099Ltc
+    Tax1099Misc
+    Tax1099Nec
+    Tax1099Oid
+    Tax1099Patr
+    Tax1099Q
+    Tax1099Qa
+    Tax1099R
+    Tax1099S
+    Tax1099Sa
+    Tax1099Sb
+    Tax1120SK1
+    Tax2439
+    Tax3921
+    Tax3922
+    Tax5227K1
+    Tax5498
+    Tax5498Esa
+    Tax5498Qa
+    Tax5498Sa
+    TaxW2
+    TaxW2C
+    TaxW2G
+}
+type TaxParty implements ITaxParty {
+    """
+    Issuer or recipient Tax Identification Number.
+    Usually EIN for issuer and SSN for recipient
+    """
+    tin: String
+
+    """
+    Type of issuer or recipient legal entity, as "BUSINESS" or "INDIVIDUAL".
+    Commonly BUSINESS for issuer and INDIVIDUAL for recipient
+    """
+    partyType: TaxPartyType
+
+    "Individual issuer or recipient name"
+    individualName: IndividualName
+
+    "Business issuer or recipient name"
+    businessName: BusinessName
+
+    "Issuer or recipient address"
+    address: Address
+
+    "Issuer or recipient telephone number"
+    phone: TelephoneNumberPlusExtension
+
+    """
+    Issuer or recipient email address.
+    (Additional information, not part of IRS forms)
+    """
+    email: String
+}
+interface ITaxParty {
+    """
+    Issuer or recipient Tax Identification Number.
+    Usually EIN for issuer and SSN for recipient
+    """
+    tin: String
+
+    """
+    Type of issuer or recipient legal entity, as "BUSINESS" or "INDIVIDUAL".
+    Commonly BUSINESS for issuer and INDIVIDUAL for recipient
+    """
+    partyType: TaxPartyType
+
+    "Individual issuer or recipient name"
+    individualName: IndividualName
+
+    "Business issuer or recipient name"
+    businessName: BusinessName
+
+    "Issuer or recipient address"
+    address: Address
+
+    "Issuer or recipient telephone number"
+    phone: TelephoneNumberPlusExtension
+
+    """
+    Issuer or recipient email address.
+    (Additional information, not part of IRS forms)
+    """
+    email: String
+}
+
+type TaxStatement {
+    "Year for which taxes are being paid"
+    taxYear: Int
+
+    "Long-term persistent id for the tax statement. Depending upon the data provider, this may be the same id as the id on the enclosed tax form(s), or this may be a different id"
+    taxStatementId: ID
+
+    "Issuer's name, address, phone, and TIN. Issuer data need only be transmitted on TaxStatement responses if it is the same on all included tax forms"
+    issuer: TaxParty
+
+    "Recipient's name, address, phone, and TIN. Recipient data need only be transmitted on TaxStatement responses if it is the same on all included tax forms"
+    recipient: TaxParty
+
+    "The list of data contents for all included tax forms"
+    forms: TaxData
+}
+
+type TaxStatementList implements PaginatedArray {
+    page: PageMetadata
+    statements: [TaxStatement!]
+}
+
+enum TaxPartyType {
+    BUSINESS
+    INDIVIDUAL
+}
+
+"Month enumeration used on forms 1095-A and 1095-C"
+enum CoverageMonth {
+    ANNUAL
+    JANUARY
+    FEBRUARY
+    MARCH
+    APRIL
+    MAY
+    JUNE
+    JULY
+    AUGUST
+    SEPTEMBER
+    OCTOBER
+    NOVEMBER
+    DECEMBER
+}
+
+"Type of expired stock option. Used by IRS Form 8949"
+enum ExpiredOptionType {
+    GRANTED
+    PURCHASED
+}
+
+"Type of investment sale"
+enum InvestmentSaleType {
+    CRYPTOCURRENCY
+    EMPLOYEE_STOCK_PURCHASE_PLAN
+    INCENTIVE_STOCK_OPTION
+    NONQUALIFIED_STOCK_OPTIONS
+    OTHER
+    RESTRICTED_STOCK
+    RESTRICTED_STOCK_UNITS
+}
+
+enum MonthAbbreviation {
+    JAN
+    FEB
+    MAR
+    APR
+    MAY
+    JUN
+    JUL
+    AUG
+    SEP
+    OCT
+    NOV
+    DEC
+}
+
+"Gross or net proceeds.  Used by Form 1099-B"
+enum SaleProceedsType {
+    GROSS
+    NET
+}
+
+"Long or short term. Used by Form 1099-B"
+enum SaleTermType {
+    LONG
+    SHORT
+}

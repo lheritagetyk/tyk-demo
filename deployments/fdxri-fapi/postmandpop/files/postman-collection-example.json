@@ -1,0 +1,385 @@
+{
+  "info": {
+    "name": "FAPI 2.0 DPoP Flow - Tyk + Keycloak",
+    "description": "Complete OAuth 2.0 flow with DPoP for FAPI 2.0 compliance",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Copy the contents of dpop-postman-final.js here",
+          "// This will automatically add DPoP headers to all requests"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_server",
+      "value": "https://auth.bank.com",
+      "type": "string"
+    },
+    {
+      "key": "api_server",
+      "value": "https://api.bank.com",
+      "type": "string"
+    },
+    {
+      "key": "realm",
+      "value": "bank",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "bank-client",
+      "type": "string"
+    },
+    {
+      "key": "redirect_uri",
+      "value": "https://oauth.pstmn.io/v1/callback",
+      "type": "string"
+    },
+    {
+      "key": "scope",
+      "value": "openid accounts",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. PAR - Pushed Authorization Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "response_type",
+              "value": "code",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            },
+            {
+              "key": "redirect_uri",
+              "value": "{{redirect_uri}}",
+              "type": "text"
+            },
+            {
+              "key": "scope",
+              "value": "{{scope}}",
+              "type": "text"
+            },
+            {
+              "key": "code_challenge",
+              "value": "{{pkce_challenge}}",
+              "type": "text"
+            },
+            {
+              "key": "code_challenge_method",
+              "value": "S256",
+              "type": "text"
+            },
+            {
+              "key": "state",
+              "value": "{{$randomUUID}}",
+              "type": "text"
+            },
+            {
+              "key": "nonce",
+              "value": "{{$randomUUID}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{auth_server}}/as/par",
+          "host": ["{{auth_server}}"],
+          "path": ["as", "par"]
+        },
+        "description": "Push authorization request to PAR endpoint. DPoP proof will be added automatically."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save request_uri from response",
+              "const response = pm.response.json();",
+              "if (response.request_uri) {",
+              "    pm.environment.set('request_uri', response.request_uri);",
+              "    console.log('✅ Request URI saved:', response.request_uri);",
+              "}",
+              "",
+              "// Check for DPoP nonce (if server requires it)",
+              "const dpopNonce = pm.response.headers.get('DPoP-Nonce');",
+              "if (dpopNonce) {",
+              "    pm.environment.set('dpop_nonce', dpopNonce);",
+              "    console.log('💡 DPoP nonce received:', dpopNonce);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authorization Endpoint (Browser)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{auth_server}}/realms/{{realm}}/protocol/openid-connect/auth?client_id={{client_id}}&request_uri={{request_uri}}",
+          "host": ["{{auth_server}}"],
+          "path": ["realms", "{{realm}}", "protocol", "openid-connect", "auth"],
+          "query": [
+            {
+              "key": "client_id",
+              "value": "{{client_id}}"
+            },
+            {
+              "key": "request_uri",
+              "value": "{{request_uri}}"
+            }
+          ]
+        },
+        "description": "This opens in browser for user authentication. Copy the authorization code from the redirect URL."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "console.log('🌐 Open this URL in a browser to authenticate');",
+              "console.log('📋 After login, copy the \"code\" parameter from the redirect URL');",
+              "console.log('💾 Save it as: authorization_code')"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Token Request - Exchange Code",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "authorization_code",
+              "type": "text"
+            },
+            {
+              "key": "code",
+              "value": "{{authorization_code}}",
+              "type": "text"
+            },
+            {
+              "key": "redirect_uri",
+              "value": "{{redirect_uri}}",
+              "type": "text"
+            },
+            {
+              "key": "code_verifier",
+              "value": "{{pkce_verifier}}",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{auth_server}}/realms/{{realm}}/protocol/openid-connect/token",
+          "host": ["{{auth_server}}"],
+          "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+        },
+        "description": "Exchange authorization code for DPoP-bound access token. DPoP proof automatically added."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save tokens from response",
+              "const response = pm.response.json();",
+              "",
+              "if (response.access_token) {",
+              "    pm.environment.set('access_token', response.access_token);",
+              "    console.log('✅ Access token saved');",
+              "    console.log('Token type:', response.token_type);",
+              "    ",
+              "    if (response.token_type === 'DPoP') {",
+              "        console.log('🔐 Token is DPoP-bound!');",
+              "    }",
+              "}",
+              "",
+              "if (response.refresh_token) {",
+              "    pm.environment.set('refresh_token', response.refresh_token);",
+              "    console.log('✅ Refresh token saved');",
+              "}",
+              "",
+              "if (response.id_token) {",
+              "    pm.environment.set('id_token', response.id_token);",
+              "    console.log('✅ ID token saved');",
+              "}",
+              "",
+              "console.log('⏱️  Expires in:', response.expires_in, 'seconds');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Get Accounts (Protected API)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "DPoP {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{api_server}}/accounts",
+          "host": ["{{api_server}}"],
+          "path": ["accounts"]
+        },
+        "description": "Call protected API with DPoP-bound token. DPoP proof with 'ath' claim automatically added."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Validate response",
+              "pm.test('Status code is 200', function() {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has accounts', function() {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response).to.have.property('accounts');",
+              "});",
+              "",
+              "console.log('✅ API call successful with DPoP token!');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Get Transactions (Protected API)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "DPoP {{access_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{api_server}}/accounts/{{account_id}}/transactions",
+          "host": ["{{api_server}}"],
+          "path": ["accounts", "{{account_id}}", "transactions"]
+        },
+        "description": "Get transactions for a specific account. New DPoP proof generated for this URL."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "refresh_token",
+              "type": "text"
+            },
+            {
+              "key": "refresh_token",
+              "value": "{{refresh_token}}",
+              "type": "text"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{auth_server}}/realms/{{realm}}/protocol/openid-connect/token",
+          "host": ["{{auth_server}}"],
+          "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+        },
+        "description": "Refresh the access token using refresh token. Returns new DPoP-bound access token."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save new tokens",
+              "const response = pm.response.json();",
+              "",
+              "if (response.access_token) {",
+              "    pm.environment.set('access_token', response.access_token);",
+              "    console.log('✅ New access token saved');",
+              "}",
+              "",
+              "if (response.refresh_token) {",
+              "    pm.environment.set('refresh_token', response.refresh_token);",
+              "    console.log('✅ New refresh token saved');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

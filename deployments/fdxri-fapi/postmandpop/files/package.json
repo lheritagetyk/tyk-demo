@@ -1,0 +1,28 @@
+{
+  "name": "dpop-postman-tools",
+  "version": "1.0.0",
+  "description": "DPoP signing tools for Postman with proper ES256 crypto",
+  "main": "dpop-signing-service.js",
+  "scripts": {
+    "start": "node dpop-signing-service.js",
+    "generate-keys": "node dpop-crypto-helper.js generate-keys",
+    "sign": "node dpop-crypto-helper.js sign-dpop",
+    "test": "node test-dpop.js"
+  },
+  "keywords": [
+    "dpop",
+    "oauth2",
+    "fapi",
+    "postman",
+    "jwt",
+    "es256"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jose": "^5.9.6",
+    "express": "^4.21.1",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.3"
+  }
+}
