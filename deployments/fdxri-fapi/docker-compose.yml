@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_PASSWORD: F9@#t3jqz8r
     networks:
-      - tyk-demo_tyk 
+      - tyk 
     ports:
       - 7432:7432
 
@@ -17,7 +17,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - tyk-demo_tyk 
+      - tyk 
     ports:
       - 8090:8080
   keycloak-db:
@@ -69,8 +69,51 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_FEATURES: "token-exchange,admin-fine-grained-authz,dpop"
+  fdxwebui:
+    build:
+      context: ./deployments/fdxri-fapi/fdxwebui
+      dockerfile: Dockerfile
+    container_name: fdxwebui
+    depends_on:
+      - keycloak
+    networks:
+      - tyk
+    ports:
+      - "3010:3010"  # DPoP signing service
+      - "3030:3030"   # Vite dev server
+    environment:
+      - NODE_ENV=development
+      - VITE_KEYCLOAK_URL=http://keycloak:8180
+      - VITE_KEYCLOAK_REALM=fapi-demo
+      - VITE_CLIENT_ID=${VITE_CLIENT_ID:-fdx-sample-webapp}
+      - VITE_REDIRECT_URI=${VITE_REDIRECT_URI:-http://localhost:3030/callback}
+      - VITE_DPOP_SERVICE_URL=http://localhost:3010
+      - VITE_FDX_CORE_API_URL=http://tyk-gateway.localhost:8080/fdxfapi
+      - VITE_FDX_CUSTOMER_API_URL=http://tyk-gateway.localhost:8080/fdxapi
+    volumes:
+      # Mount source code for hot-reload (development)
+      # Paths are relative to project root (where docker-compose is executed)
+      - ./deployments/fdxri-fapi/fdxwebui/src:/app/src:ro
+      - ./deployments/fdxri-fapi/fdxwebui/public:/app/public:ro
+      - ./deployments/fdxri-fapi/fdxwebui/index.html:/app/index.html:ro
+      - ./deployments/fdxri-fapi/fdxwebui/vite.config.js:/app/vite.config.js:ro
+      - ./deployments/fdxri-fapi/fdxwebui/package.json:/app/package.json:ro
+      # Mount DPoP service files for hot-reload
+      - ./deployments/fdxri-fapi/fdxwebui/dpop-signing-service.js:/app/dpop-signing-service.js:ro
+      # Mount keys (read-only)
+      - ./deployments/fdxri-fapi/fdxwebui/dpop-keys.json:/app/dpop-keys.json:ro
+      # Exclude node_modules from volume mount (use container's installed version)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3010/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
 volumes:
   keycloak-data: null
 networks:
   tyk-demo_tyk:
+    external: true
+  tyk:
     external: true

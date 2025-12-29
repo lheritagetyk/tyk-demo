@@ -439,11 +439,50 @@ else
     exit 1
 fi
 
+# Start fdxwebui service (DPoP signing service + Vite dev server)
+log_message "Starting fdxwebui service (DPoP signing service + Vite dev server)"
+if [ -f "./deployments/fdxri-fapi/fdxwebui/Dockerfile" ]; then
+    $(generate_docker_compose_command) up -d --build fdxwebui 1>/dev/null 2>>logs/bootstrap.log
+    if [ $? -eq 0 ]; then
+        log_message "  Waiting for fdxwebui services to be ready..."
+        # Wait for DPoP service to be healthy
+        for i in {1..30}; do
+            if curl -s http://localhost:3010/health > /dev/null 2>&1; then
+                log_message "  ✓ DPoP signing service is ready on port 3010"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                log_message "  ⚠️  DPoP service did not become ready in time"
+            fi
+            sleep 1
+        done
+        # Wait for Vite dev server
+        for i in {1..30}; do
+            if curl -s http://localhost:3030 > /dev/null 2>&1; then
+                log_message "  ✓ Vite dev server is ready on port 3030"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                log_message "  ⚠️  Vite dev server did not become ready in time"
+            fi
+            sleep 1
+        done
+        log_ok
+    else
+        log_message "ERROR: Failed to start fdxwebui service"
+    fi
+else
+    log_message "WARNING: fdxwebui Dockerfile not found, skipping fdxwebui startup"
+fi
+bootstrap_progress
 
 log_end_deployment
 # Echo credentials for Admin, Example Developer and Example Consumer
 echo -e "\033[2K
 ▼ FDXRI
   ▽ FDXRI ($(get_service_image_tag "fdxri-tomcat"))
-          URL : http://localhost:8090/fdxapi/accounts"
+          URL : http://localhost:8090/fdxapi/accounts
+  ▽ FDX Web UI
+          Web UI : http://localhost:3030
+          DPoP Service : http://localhost:3010"
 

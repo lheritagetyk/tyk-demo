@@ -160,9 +160,11 @@ app.get('/public-key', (req, res) => {
 // Start server
 loadOrGenerateKeys();
 
-app.listen(PORT, () => {
+// Listen on all interfaces (0.0.0.0) to work in Docker
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
     console.log('\n🚀 DPoP Signing Service running!');
-    console.log(`📡 Server: http://localhost:${PORT}`);
+    console.log(`📡 Server: http://${HOST}:${PORT}`);
     console.log('\n📋 Endpoints:');
     console.log(`   POST http://localhost:${PORT}/generate-dpop   - Generate DPoP proof`);
     console.log(`   GET  http://localhost:${PORT}/public-key      - Get public key`);

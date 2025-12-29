@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from 'fs'
 
 export default defineConfig({
   plugins: [react()],
@@ -21,24 +22,43 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/dpop/, '')
       },
       '/keycloak': {
-        target: 'http://localhost:8180',
+        // When running in Docker container, use service name 'keycloak'
+        // When running locally (npm run dev), use 'localhost'
+        // Check if we're in Docker by looking for container environment
+        target: process.env.KEYCLOAK_PROXY_TARGET || 
+                (fs.existsSync('/.dockerenv') 
+                  ? 'http://keycloak:8180' 
+                  : 'http://localhost:8180'),
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/keycloak/, '')
       },
       '/fdxfapi': {
-        target: 'http://tyk-gateway.localhost:8080',
+        // Use Docker service name when in container, hostname when local
+        target: process.env.TYK_GATEWAY_PROXY_TARGET || 
+                (fs.existsSync('/.dockerenv') 
+                  ? 'http://tyk-gateway:8080' 
+                  : 'http://tyk-gateway.localhost:8080'),
         changeOrigin: true
       },
       '/fdxapi': {
-        target: 'http://tyk-gateway.localhost:8080',
+        target: process.env.TYK_GATEWAY_PROXY_TARGET || 
+                (fs.existsSync('/.dockerenv') 
+                  ? 'http://tyk-gateway:8080' 
+                  : 'http://tyk-gateway.localhost:8080'),
         changeOrigin: true
       },
       '/fdxri': {
-        target: 'http://tyk-gateway.localhost:8080',
+        target: process.env.TYK_GATEWAY_PROXY_TARGET || 
+                (fs.existsSync('/.dockerenv') 
+                  ? 'http://tyk-gateway:8080' 
+                  : 'http://tyk-gateway.localhost:8080'),
         changeOrigin: true
       },
       '/account-information': {
-        target: 'http://tyk-gateway.localhost:8080',
+        target: process.env.TYK_GATEWAY_PROXY_TARGET || 
+                (fs.existsSync('/.dockerenv') 
+                  ? 'http://tyk-gateway:8080' 
+                  : 'http://tyk-gateway.localhost:8080'),
         changeOrigin: true
       }
     }
