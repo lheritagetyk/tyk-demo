@@ -558,7 +558,7 @@
 			"response": []
 		},
 		{
-			"name": "4. Get Accounts (Protected API)",
+			"name": "4.UK Get Accounts (Protected API)",
 			"event": [
 				{
 					"listen": "test",
@@ -617,7 +617,31 @@
 			"response": []
 		},
 		{
-			"name": "5. Get Transactions (Protected API)",
+			"name": "4. FDX Get Accounts FDX (Protected API)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "DPoP {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_server}}/fdxfapi/accounts",
+					"host": [
+						"{{api_server}}"
+					],
+					"path": [
+						"fdxfapi",
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. UK Get Transactions (Protected API)",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -640,6 +664,57 @@
 					]
 				},
 				"description": "Get transactions for a specific account. New DPoP proof generated for this URL."
+			},
+			"response": []
+		},
+		{
+			"name": "4 FDX Get Accounts Details - Deposit",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "DPoP {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_server}}/fdxfapi/accounts/de6203",
+					"host": [
+						"{{api_server}}"
+					],
+					"path": [
+						"fdxfapi",
+						"accounts",
+						"de6203"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5  FDX Get Transactions (Protected API)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "DPoP {{access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_server}}/fdxfapi/accounts/de6201/transactions",
+					"host": [
+						"{{api_server}}"
+					],
+					"path": [
+						"fdxfapi",
+						"accounts",
+						"de6201",
+						"transactions"
+					]
+				}
 			},
 			"response": []
 		},
