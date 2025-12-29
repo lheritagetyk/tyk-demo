@@ -439,6 +439,32 @@ else
     exit 1
 fi
 
+# Start tyk-grpc-plugin service
+log_message "Starting tyk-grpc-plugin service"
+if [ -f "./deployments/fdxri-fapi/tyk-grpc-plugin/Dockerfile" ]; then
+    $(generate_docker_compose_command) up -d --build tyk-grpc-plugin 1>/dev/null 2>>logs/bootstrap.log
+    if [ $? -eq 0 ]; then
+        log_message "  Waiting for tyk-grpc-plugin to be ready..."
+        # Wait for gRPC service to be ready (check if port is listening)
+        for i in {1..30}; do
+            if nc -z localhost 5555 2>/dev/null || timeout 1 bash -c "echo >/dev/tcp/localhost/5555" 2>/dev/null; then
+                log_message "  ✓ Tyk gRPC plugin is ready on port 5555"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                log_message "  ⚠️  Tyk gRPC plugin did not become ready in time"
+            fi
+            sleep 1
+        done
+        log_ok
+    else
+        log_message "ERROR: Failed to start tyk-grpc-plugin service"
+    fi
+else
+    log_message "WARNING: tyk-grpc-plugin Dockerfile not found, skipping tyk-grpc-plugin startup"
+fi
+bootstrap_progress
+
 # Start fdxwebui service (DPoP signing service + Vite dev server)
 log_message "Starting fdxwebui service (DPoP signing service + Vite dev server)"
 if [ -f "./deployments/fdxri-fapi/fdxwebui/Dockerfile" ]; then
@@ -482,6 +508,8 @@ echo -e "\033[2K
 ▼ FDXRI
   ▽ FDXRI ($(get_service_image_tag "fdxri-tomcat"))
           URL : http://localhost:8090/fdxapi/accounts
+  ▽ Tyk gRPC Plugin
+          gRPC Port : http://localhost:5555
   ▽ FDX Web UI
           Web UI : http://localhost:3030
           DPoP Service : http://localhost:3010"

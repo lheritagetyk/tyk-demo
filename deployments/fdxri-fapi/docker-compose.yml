@@ -69,6 +69,25 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_FEATURES: "token-exchange,admin-fine-grained-authz,dpop"
+  tyk-grpc-plugin:
+    build:
+      context: ./deployments/fdxri-fapi/tyk-grpc-plugin
+      dockerfile: Dockerfile
+    container_name: tyk-grpc-plugin-fapi
+    networks:
+      - tyk
+    ports:
+      - "5555:5555"
+    restart: unless-stopped
+    # Optional: Mount private key if needed for JWS signing
+    # volumes:
+    #   - ./deployments/fdxri-fapi/tyk-grpc-plugin/private.pem:/app/private.pem:ro
+    # Optional: Set JWS environment variables if needed
+    # environment:
+    #   - JWS_PRIVATE_KEY
+    #   - JWS_PRIVATE_KEY_PATH
+    #   - JWS_KEY_ID
+    #   - JWS_ISSUER
   fdxwebui:
     build:
       context: ./deployments/fdxri-fapi/fdxwebui
