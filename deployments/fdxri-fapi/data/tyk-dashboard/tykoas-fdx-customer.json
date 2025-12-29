@@ -1,125 +1,207 @@
 {
+  "info": {
+    "contact": {
+      "email": "fdxsupport@financialdataexchange.org",
+      "name": "Financial Data Exchange",
+      "url": "https://financialdataexchange.org/"
+    },
+    "description": "Financial Data Exchange V6.2.0 Customer API",
+    "license": {
+      "name": "FDX API License Agreement (11-13-2019)",
+      "url": "https://financialdataexchange.org/common/Uploaded%20files/Policies/FDX%20API%20License%20Agreement-(11-13-2019).pdf"
+    },
+    "title": "FDX V6.2.0 Customer API",
+    "version": "6.2.0"
+  },
+  "openapi": "3.0.3",
+  "servers": [
+    {
+      "url": "http://localhost:8080/fdx"
+    },
+    {
+      "description": "Financial Data Exchange V6 Customer API",
+      "url": "http://host.docker.internal:8090/fdxapi"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Search and view customer or customers",
+      "name": "Personal Information"
+    }
+  ],
+  "security": [
+    {
+      "jwtAuth": []
+    }
+  ],
+  "paths": {
+    "/customers": {
+      "get": {
+        "description": "Retrieve account holders related to permissioned accounts",
+        "operationId": "getCustomers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OffsetQuery"
+          },
+          {
+            "$ref": "#/components/parameters/LimitQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customers"
+                }
+              }
+            },
+            "description": "Customers",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            }
+          }
+        },
+        "summary": "Retrieve customers",
+        "tags": [
+          "Personal Information"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/FapiInteractionIdHeader"
+        },
+        {
+          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+        }
+      ]
+    },
+    "/customers/current": {
+      "get": {
+        "description": "Get information about the customer within the authorization scope",
+        "operationId": "getCustomerInfo",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            },
+            "description": "Data describing current authenticated customer",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            }
+          }
+        },
+        "summary": "Get current authenticated customer information",
+        "tags": [
+          "Personal Information"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/FapiInteractionIdHeader"
+        },
+        {
+          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+        }
+      ]
+    },
+    "/customers/{customerId}": {
+      "get": {
+        "description": "Retrieve customer information by customer id",
+        "operationId": "getCustomer",
+        "parameters": [
+          {
+            "description": "Customer Identifier",
+            "in": "path",
+            "name": "customerId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            },
+            "description": "Customer",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Customer not found": {
+                    "value": {
+                      "code": "601",
+                      "debugMessage": "Provider custom developer-level error details for troubleshooting",
+                      "message": "Customer not found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Customer with id not found",
+            "headers": {
+              "x-fapi-interaction-id": {
+                "$ref": "#/components/headers/x-fapi-interaction-id"
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "501": {
+            "$ref": "#/components/responses/501"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        },
+        "summary": "Customer by id",
+        "tags": [
+          "Personal Information"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/FapiInteractionIdHeader"
+        },
+        {
+          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+        },
+        {
+          "in": "path",
+          "name": "customerId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
   "components": {
-    "headers": {
-      "x-fapi-interaction-id": {
-        "description": "Unique identifier for this interaction",
-        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a",
-        "schema": {
-          "$ref": "#/components/schemas/FapiInteractionId"
-        }
-      }
-    },
-    "parameters": {
-      "FapiInteractionIdHeader": {
-        "description": "Unique identifier for this interaction",
-        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a",
-        "in": "header",
-        "name": "x-fapi-interaction-id",
-        "required": true,
-        "schema": {
-          "$ref": "#/components/schemas/FapiInteractionId"
-        }
-      },
-      "FdxApiActorTypeHeader": {
-        "description": "Identifies whether the customer is present (USER) or it is a BATCH operation",
-        "example": "BATCH",
-        "in": "header",
-        "name": "FDX-API-Actor-Type",
-        "schema": {
-          "$ref": "#/components/schemas/ActorType"
-        }
-      },
-      "LimitQuery": {
-        "description": "Number of elements that the consumer wishes to receive. Providers should implement reasonable default/maximum/minimum values based on their internal architecture and update their documentation accordingly",
-        "in": "query",
-        "name": "limit",
-        "schema": {
-          "type": "integer"
-        }
-      },
-      "OffsetQuery": {
-        "description": "Opaque cursor used by the provider to send the next set of records",
-        "in": "query",
-        "name": "offset",
-        "schema": {
-          "type": "string"
-        }
-      }
-    },
-    "responses": {
-      "500": {
-        "content": {
-          "application/json": {
-            "examples": {
-              "Internal server error": {
-                "value": {
-                  "code": "500",
-                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            }
-          }
-        },
-        "description": "Catch-all exception where request was not processed due to an internal outage/issue. Consider other more specific errors before using this error",
-        "headers": {
-          "x-fapi-interaction-id": {
-            "$ref": "#/components/headers/x-fapi-interaction-id"
-          }
-        }
-      },
-      "501": {
-        "content": {
-          "application/json": {
-            "examples": {
-              "FdxVersion not supported or not implemented": {
-                "value": {
-                  "code": "1106",
-                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting",
-                  "message": "FdxVersion not supported or not implemented"
-                }
-              }
-            },
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            }
-          }
-        },
-        "description": "Error when FdxVersion in Header is not one of those implemented at backend",
-        "headers": {
-          "x-fapi-interaction-id": {
-            "$ref": "#/components/headers/x-fapi-interaction-id"
-          }
-        }
-      },
-      "503": {
-        "content": {
-          "application/json": {
-            "examples": {
-              "Scheduled Maintenance": {
-                "value": {
-                  "code": "503",
-                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting",
-                  "message": "Scheduled Maintenance"
-                }
-              }
-            },
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            }
-          }
-        },
-        "description": "System is down for maintenance",
-        "headers": {
-          "x-fapi-interaction-id": {
-            "$ref": "#/components/headers/x-fapi-interaction-id"
-          }
-        }
-      }
-    },
     "schemas": {
       "AccountHolderRelationship": {
         "description": "Types of relationships between accounts and holders. Suggested values",
@@ -909,6 +991,52 @@
         "type": "string"
       }
     },
+    "headers": {
+      "x-fapi-interaction-id": {
+        "description": "Unique identifier for this interaction",
+        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a",
+        "schema": {
+          "$ref": "#/components/schemas/FapiInteractionId"
+        }
+      }
+    },
+    "parameters": {
+      "FapiInteractionIdHeader": {
+        "description": "Unique identifier for this interaction",
+        "example": "c770aef3-6784-41f7-8e0e-ff5f97bddb3a",
+        "in": "header",
+        "name": "x-fapi-interaction-id",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/FapiInteractionId"
+        }
+      },
+      "FdxApiActorTypeHeader": {
+        "description": "Identifies whether the customer is present (USER) or it is a BATCH operation",
+        "example": "BATCH",
+        "in": "header",
+        "name": "FDX-API-Actor-Type",
+        "schema": {
+          "$ref": "#/components/schemas/ActorType"
+        }
+      },
+      "LimitQuery": {
+        "description": "Number of elements that the consumer wishes to receive. Providers should implement reasonable default/maximum/minimum values based on their internal architecture and update their documentation accordingly",
+        "in": "query",
+        "name": "limit",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "OffsetQuery": {
+        "description": "Opaque cursor used by the provider to send the next set of records",
+        "in": "query",
+        "name": "offset",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
     "securitySchemes": {
       "OAuthFapi1Advanced": {
         "description": "This authorization protocol uses FAPI Security Profile 1.0 Part Two — Advanced. To be used with the FDX API customer data domains. In addition, these operations employ the FDX User Consent framework for permissioned data sharing.\nClient must comply with [5.2.3 Confidential client](https://openid.net/specs/openid-financial-api-part-2-1_0.html#confidential-client). Authorization server must comply with the [5.2.2 Authorization server](https://openid.net/specs/openid-financial-api-part-2-1_0.html#authorization-server).\nClient, authorization server and resource server requirements described in full by:\n  * [FAPI Security Profile 1.0 Part Two — Advanced](https://openid.net/specs/openid-financial-api-part-2-1_0.html)\n  * FDX API Security Model specification published with the FDX API\n\nConsent User Experience and Issuance described by:\n  * FDX User Experience Guidelines published with the FDX API\n  * Consent API operations and data structures published within the FDX API",
@@ -936,214 +1064,97 @@
           }
         },
         "type": "oauth2"
+      },
+      "jwtAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "500": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Internal server error": {
+                "value": {
+                  "code": "500",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        },
+        "description": "Catch-all exception where request was not processed due to an internal outage/issue. Consider other more specific errors before using this error",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        }
+      },
+      "501": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "FdxVersion not supported or not implemented": {
+                "value": {
+                  "code": "1106",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting",
+                  "message": "FdxVersion not supported or not implemented"
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        },
+        "description": "Error when FdxVersion in Header is not one of those implemented at backend",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        }
+      },
+      "503": {
+        "content": {
+          "application/json": {
+            "examples": {
+              "Scheduled Maintenance": {
+                "value": {
+                  "code": "503",
+                  "debugMessage": "Data Provider's custom developer-level error details for troubleshooting",
+                  "message": "Scheduled Maintenance"
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        },
+        "description": "System is down for maintenance",
+        "headers": {
+          "x-fapi-interaction-id": {
+            "$ref": "#/components/headers/x-fapi-interaction-id"
+          }
+        }
       }
     }
   },
-  "info": {
-    "contact": {
-      "email": "fdxsupport@financialdataexchange.org",
-      "name": "Financial Data Exchange",
-      "url": "https://financialdataexchange.org/"
-    },
-    "description": "Financial Data Exchange V6.2.0 Customer API",
-    "license": {
-      "name": "FDX API License Agreement (11-13-2019)",
-      "url": "https://financialdataexchange.org/common/Uploaded%20files/Policies/FDX%20API%20License%20Agreement-(11-13-2019).pdf"
-    },
-    "title": "FDX V6.2.0 Customer API",
-    "version": "6.2.0"
-  },
-  "openapi": "3.0.3",
-  "paths": {
-    "/customers": {
-      "get": {
-        "description": "Retrieve account holders related to permissioned accounts",
-        "operationId": "getCustomers",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/OffsetQuery"
-          },
-          {
-            "$ref": "#/components/parameters/LimitQuery"
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Customers"
-                }
-              }
-            },
-            "description": "Customers",
-            "headers": {
-              "x-fapi-interaction-id": {
-                "$ref": "#/components/headers/x-fapi-interaction-id"
-              }
-            }
-          }
-        },
-        "summary": "Retrieve customers",
-        "tags": [
-          "Personal Information"
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        }
-      ]
-    },
-    "/customers/current": {
-      "get": {
-        "description": "Get information about the customer within the authorization scope",
-        "operationId": "getCustomerInfo",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Customer"
-                }
-              }
-            },
-            "description": "Data describing current authenticated customer",
-            "headers": {
-              "x-fapi-interaction-id": {
-                "$ref": "#/components/headers/x-fapi-interaction-id"
-              }
-            }
-          }
-        },
-        "summary": "Get current authenticated customer information",
-        "tags": [
-          "Personal Information"
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        }
-      ]
-    },
-    "/customers/{customerId}": {
-      "get": {
-        "description": "Retrieve customer information by customer id",
-        "operationId": "getCustomer",
-        "parameters": [
-          {
-            "description": "Customer Identifier",
-            "in": "path",
-            "name": "customerId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Customer"
-                }
-              }
-            },
-            "description": "Customer",
-            "headers": {
-              "x-fapi-interaction-id": {
-                "$ref": "#/components/headers/x-fapi-interaction-id"
-              }
-            }
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Customer not found": {
-                    "value": {
-                      "code": "601",
-                      "debugMessage": "Provider custom developer-level error details for troubleshooting",
-                      "message": "Customer not found"
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            },
-            "description": "Customer with id not found",
-            "headers": {
-              "x-fapi-interaction-id": {
-                "$ref": "#/components/headers/x-fapi-interaction-id"
-              }
-            }
-          },
-          "500": {
-            "$ref": "#/components/responses/500"
-          },
-          "501": {
-            "$ref": "#/components/responses/501"
-          },
-          "503": {
-            "$ref": "#/components/responses/503"
-          }
-        },
-        "summary": "Customer by id",
-        "tags": [
-          "Personal Information"
-        ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
-          "in": "path",
-          "name": "customerId",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ]
-    }
-  },
-  "servers": [
-    {
-      "url": "http://localhost:8080/fdx"
-    },
-    {
-      "description": "Financial Data Exchange V6 Customer API",
-      "url": "http://host.docker.internal:8090/fdxapi"
-    }
-  ],
-  "tags": [
-    {
-      "description": "Search and view customer or customers",
-      "name": "Personal Information"
-    }
-  ],
   "x-tyk-api-gateway": {
     "info": {
-      "dbId": "692de9800274f400016d0a5e",
+      "dbId": "6952ba3886dfb800016245c0",
       "id": "7f36dab385094ba44a2a9e66299ebcaa",
-      "name": "FDX V6.2.0 Customer API",
       "orgId": "5e9d9544a1dcd60001d0ed20",
+      "name": "FDX V6.2.0 Customer API",
       "state": {
-        "active": true
+        "active": true,
+        "internal": false
       }
     },
     "middleware": {
@@ -1151,12 +1162,58 @@
         "contextVariables": {
           "enabled": true
         },
+        "pluginConfig": {
+          "driver": "grpc"
+        },
+        "postAuthenticationPlugins": [
+          {
+            "enabled": true,
+            "functionName": "IdempotencyCheck",
+            "path": "",
+            "requireSession": true
+          }
+        ],
+        "prePlugins": [
+          {
+            "enabled": true,
+            "functionName": "DPoPCheck",
+            "path": "",
+            "rawBodyOnly": true
+          }
+        ],
+        "responsePlugins": [
+          {
+            "enabled": true,
+            "functionName": "IdempotencyResponse",
+            "path": "",
+            "requireSession": true
+          }
+        ],
         "trafficLogs": {
           "enabled": true
         }
       }
     },
     "server": {
+      "authentication": {
+        "enabled": true,
+        "securitySchemes": {
+          "jwtAuth": {
+            "header": {
+              "enabled": true,
+              "name": "Authorization"
+            },
+            "identityBaseField": "sub",
+            "policyFieldName": "pol",
+            "enabled": true,
+            "defaultPolicies": [
+              "68bb84368f572b0001f1c7c0"
+            ],
+            "signingMethod": "ecdsa",
+            "source": "aHR0cDovL2tleWNsb2FrOjgxODAvcmVhbG1zL2ZhcGktZGVtby9wcm90b2NvbC9vcGVuaWQtY29ubmVjdC9jZXJ0cw=="
+          }
+        }
+      },
       "gatewayTags": {
         "enabled": true,
         "tags": [
@@ -1165,10 +1222,14 @@
       },
       "listenPath": {
         "strip": true,
-        "value": "/fdx"
+        "value": "/fdxapi"
       }
     },
     "upstream": {
+      "proxy": {
+        "enabled": false,
+        "url": ""
+      },
       "url": "http://host.docker.internal:8090/fdxapi"
     }
   }

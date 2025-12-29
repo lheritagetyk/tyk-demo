@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Callback</title>
+</head>
+<body>
+    <div style="padding: 2rem; text-align: center; font-family: Arial, sans-serif;">
+        <h2>Authorization Complete</h2>
+        <p>Redirecting back to application...</p>
+    </div>
+    <script>
+        console.log('🔵 Callback.html loaded');
+        console.log('🔵 Current URL:', window.location.href);
+        console.log('🔵 Query string:', window.location.search);
+        
+        // Extract code from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+
+        console.log('🔵 URL parameters:', { code: !!code, state: !!state, error: !!error });
+        console.log('🔵 Code value:', code ? code.substring(0, 20) + '...' : 'null');
+        console.log('🔵 Error value:', error || 'null');
+
+        // Store the code/error in sessionStorage and redirect back to main app
+        if (error) {
+            console.error('❌ OAuth error in callback:', error);
+            sessionStorage.setItem('oauth_callback_error', error);
+            console.log('✅ Stored error in sessionStorage');
+            // Redirect back to main app
+            setTimeout(() => {
+                console.log('🔄 Redirecting to /');
+                window.location.href = '/';
+            }, 100);
+        } else if (code) {
+            console.log('✅ Authorization code received in callback:', code.substring(0, 20) + '...');
+            // Store code in sessionStorage
+            sessionStorage.setItem('oauth_callback_code', code);
+            console.log('✅ Stored code in sessionStorage');
+            if (state) {
+                sessionStorage.setItem('oauth_callback_state', state);
+                console.log('✅ Stored state in sessionStorage');
+            }
+            // Verify it was stored
+            const stored = sessionStorage.getItem('oauth_callback_code');
+            console.log('✅ Verified stored code:', stored ? stored.substring(0, 20) + '...' : 'NOT FOUND');
+            
+            // Redirect back to main app
+            setTimeout(() => {
+                console.log('🔄 Redirecting to /');
+                window.location.href = '/';
+            }, 100);
+        } else {
+            // No callback data - redirect back anyway
+            console.warn('⚠️ No code or error in callback URL');
+            console.warn('⚠️ Full URL:', window.location.href);
+            sessionStorage.setItem('oauth_callback_error', 'No authorization code received');
+            console.log('✅ Stored error about missing code');
+            setTimeout(() => {
+                console.log('🔄 Redirecting to /');
+                window.location.href = '/';
+            }, 100);
+        }
+    </script>
+</body>
+</html>
+

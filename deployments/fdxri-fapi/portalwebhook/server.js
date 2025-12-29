@@ -14,7 +14,7 @@ const {
   
   // Tyk Portal Admin API 
   TYK_PORTAL_BASE_URL="http://tyk-portal.localhost:3100",            // e.g. http://tyk-portal.localhost:3100
-  TYK_PORTAL_ADMIN_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm92aWRlciI6Im5vbmUiLCJVc2VySUQiOiIkMmEkMTAkTVZXeDBEQlFNdnVMLk5IcEExazlKT1pEQlhMVFpOdWYzSVdzUVZydS4zYTVBbkpYVVdkbnkifQ.FHZXRn8B3FcyQSVRtEmLHirVdnIof_MV9y-knYz0zcM",
+  TYK_PORTAL_ADMIN_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm92aWRlciI6Im5vbmUiLCJVc2VySUQiOiIkMmEkMTAkM2twdzY5RXpxbGFYLmFhd3gva3FGdXZvdnU0b3Vtdm0wLmNIOHB1UUk5WjJQdEJlQzFIeFcifQ.vjhwSmCKRrYaGu6OQjjx5r1ozxWuEvjquEpcfrE7Q5U",
   // Keycloak
   KC_BASE_URL="http://keycloak:8180",                    // e.g. http://keycloak:8180
   KC_REALM ="fapi-demo",                       // e.g. myrealm

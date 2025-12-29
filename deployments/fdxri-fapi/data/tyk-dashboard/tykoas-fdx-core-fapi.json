@@ -4721,6 +4721,12 @@
         "operationId": "searchForAccounts",
         "parameters": [
           {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
+          {
             "description": "Comma separated list of account ids",
             "explode": false,
             "in": "query",
@@ -4864,21 +4870,19 @@
         "tags": [
           "Account Information"
         ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        }
-      ]
+      }
     },
     "/accounts/{accountId}": {
       "get": {
         "description": "Retrieve full details about the account identified by `{accountId}` parameter",
         "operationId": "getAccount",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           }
@@ -4955,12 +4959,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -4975,6 +4973,12 @@
         "description": "...",
         "operationId": "getAccountAssetTransferNetworks",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           }
@@ -5017,12 +5021,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5037,6 +5035,12 @@
         "description": "Get contact information on the account",
         "operationId": "getAccountContact",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           }
@@ -5096,12 +5100,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5116,6 +5114,12 @@
         "description": "Get payment networks supported by the account",
         "operationId": "getAccountPaymentNetworks",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           },
@@ -5218,12 +5222,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5238,6 +5236,12 @@
         "description": "Get account statements. Example: GET /accounts/{accountId}/statements?startTime=value1&endTime=value2",
         "operationId": "searchForAccountStatements",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           },
@@ -5350,12 +5354,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5370,6 +5368,12 @@
         "description": "Gets an account statement image file. Use [HTTP Accept request-header](https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html) to specify desired content types. See ContentTypes definition for typical values",
         "operationId": "getAccountStatement",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           },
@@ -5495,12 +5499,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5523,6 +5521,12 @@
         "description": "Get account transaction image",
         "operationId": "getAccountTransactionImages",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           },
@@ -5613,12 +5617,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5641,6 +5639,12 @@
         "description": "Search for account transactions. Example: /accounts/{accountId}/transactions?startTime=value1&endTime=value2",
         "operationId": "searchForAccountTransactions",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/AccountIdPath"
           },
@@ -5769,12 +5773,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "accountId",
           "required": true,
@@ -5789,6 +5787,12 @@
         "description": "Query all reward programs",
         "operationId": "searchRewardPrograms",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/OffsetQuery"
           },
@@ -5912,21 +5916,19 @@
         "tags": [
           "Reward Program Information"
         ]
-      },
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        }
-      ]
+      }
     },
     "/reward-programs/{rewardProgramId}": {
       "get": {
         "description": "Get a specific reward program",
         "operationId": "getRewardProgram",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/RewardProgramIdPath"
           }
@@ -6024,12 +6026,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "rewardProgramId",
           "required": true,
@@ -6044,6 +6040,12 @@
         "description": "Get reward categories",
         "operationId": "getRewardProgramCategories",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/FapiInteractionIdHeader"
+          },
+          {
+            "$ref": "#/components/parameters/FdxApiActorTypeHeader"
+          },
           {
             "$ref": "#/components/parameters/RewardProgramIdPath"
           },
@@ -6140,12 +6142,6 @@
       },
       "parameters": [
         {
-          "$ref": "#/components/parameters/FapiInteractionIdHeader"
-        },
-        {
-          "$ref": "#/components/parameters/FdxApiActorTypeHeader"
-        },
-        {
           "in": "path",
           "name": "rewardProgramId",
           "required": true,
@@ -6202,7 +6198,7 @@
   ],
   "x-tyk-api-gateway": {
     "info": {
-      "dbId": "6908f1aee5824d00019adfef",
+      "dbId": "6939ee8b2a2bf50001a3703e",
       "id": "8ef8c11a38b042bf6d0ea1de532e9e70",
       "name": "FDX V6.2.0 Core FAPI API",
       "orgId": "5e9d9544a1dcd60001d0ed20",
@@ -6320,9 +6316,15 @@
               "name": "Authorization"
             },
             "identityBaseField": "sub",
+            "jtiValidation": {
+              "enabled": false
+            },
             "policyFieldName": "pol",
             "scopes": {
               "claimName": "scope",
+              "claims": [
+                "scope"
+              ],
               "scopeToPolicyMapping": [
                 {
                   "policyId": "68bb84368f572b0001f1c7c0",

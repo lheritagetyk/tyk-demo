@@ -1,0 +1,112 @@
+components:
+  securitySchemes:
+    authToken:
+      in: header
+      name: Authorization
+      type: apiKey
+info:
+  title: OAS HTTPbin - MTLS
+  version: 1.0.0
+openapi: 3.0.3
+paths:
+  /anything/method-transform:
+    put:
+      operationId: anything/method-transformput
+      responses:
+        '200':
+          description: ''
+      summary: Transforms HTTP method from PUT to POST
+  /anything/mock-response:
+    get:
+      operationId: anything/mock-responseget
+      responses:
+        '200':
+          content:
+            application/json:
+              example:
+                mockBody: hello world body
+          description: Return a 200 OK
+          headers:
+            Mock-Header:
+              description: Add a mock header
+              schema:
+                example: hello world header
+                type: string
+      summary: Returns a mock response
+  /anything/request-body-transform:
+    post:
+      operationId: anything/request-body-transformpost
+      responses:
+        '200':
+          description: ''
+      summary: Transforms request body data
+  /anything/request-header-transform:
+    get:
+      operationId: anything/request-header-transformget
+      responses:
+        '200':
+          description: ''
+      summary: Adds a header and removes a header
+  /anything/response-body-transform:
+    get:
+      operationId: anything/response-body-transformget
+      responses:
+        '200':
+          description: ''
+      summary: Transform the response body using a golang template file
+  /anything/response-header-transform:
+    get:
+      operationId: anything/response-header-transformget
+      responses:
+        '200':
+          description: ''
+      summary: Transforms headers in upstream API response
+  /anything/validate-request:
+    post:
+      operationId: anything/validate-requestpost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                age:
+                  description: Age in years
+                  minimum: 0
+                  type: integer
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required:
+                - firstName
+                - lastName
+              title: Person
+              type: object
+      responses:
+        '200':
+          description: ''
+      summary: Validate request body against JSON schema
+  /url-rewrite/{1}:
+    get:
+      operationId: url-rewrite/{1}get
+      parameters:
+        - in: path
+          name: '1'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      summary: Rewrites the URL sent to upstream API
+    parameters:
+      - in: path
+        name: '1'
+        required: true
+        schema:
+          type: string
+security:
+  - authToken: []
+servers:
+  - url: https://localhost:8081/laura-httpbin/
+  - url: http://tyk-gateway.localhost:8080/oas-httpbin/

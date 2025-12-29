@@ -22,6 +22,19 @@ log_message "  Completed Login to the FDX docker registry"
 log_message "Recreating fdxri-tomact and fdx_progress_container"
 $(generate_docker_compose_command) up -d --no-deps --force-recreate postgres tomcat 1>/dev/null 2>>logs/bootstrap.log
 
+
+log_message "Waiting for Keycloak to respond ok"
+wait_for_response "$keycloak_base_url/health/ready" "200"
+
+# Add this line - give Keycloak a few more seconds to fully initialize
+sleep 10
+
+log_message "Configuring Keycloak to disable SSL requirement"
+docker exec tyk-demo-keycloak-1 /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8180 --realm master --user admin --password admin
+docker exec tyk-demo-keycloak-1 /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+log_ok
+bootstrap_progress
+
 #Load all UK and FAPI Keycloak clients
 if [ -f "./deployments/fdxri-fapi/fapi-setup/export-restore/restorekeycloak.sh" ]; then
        log_message "Running UK Keycloake Setup"
@@ -77,7 +90,7 @@ create_api "deployments/fdxri-fapi/fapi-setup/ukaccounts/payment-initiation-api.
 bootstrap_progress
 
 log_message "Creating FDX Customer API"
-if create_api "deployments/fdxri-fapi/data/tyk-dashboard/fdxapi-customer.json" "$dashboard_user_api_key"; then
+if create_api "deployments/fdxri-fapi/data/tyk-dashboard/tykoas-fdx-customer.json" "$dashboard_user_api_key"; then
     log_message "FDX Customer API created successfully"
 else
     log_message "WARNING: Failed to create FDX Customer API - check if file is in Tyk API definition format"

@@ -1,0 +1,239 @@
+.teller-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.teller-header {
+  padding: 1.5rem 2rem;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.teller-header h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.auth-prompt {
+  padding: 0.75rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 0.9rem;
+}
+
+.teller-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.customers-panel,
+.accounts-panel,
+.transactions-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.customers-panel h3,
+.accounts-panel h3,
+.transactions-panel h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #333;
+  border-bottom: 2px solid #2196f3;
+  padding-bottom: 0.5rem;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.customers-list,
+.accounts-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.customer-item,
+.account-item {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.customer-item:hover,
+.account-item:hover {
+  border-color: #2196f3;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+  transform: translateY(-2px);
+}
+
+.customer-item.selected,
+.account-item.selected {
+  border-color: #2196f3;
+  background: #e3f2fd;
+}
+
+.customer-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.customer-id,
+.account-id {
+  font-size: 0.8rem;
+  color: #666;
+  font-family: 'Courier New', monospace;
+}
+
+.customer-email {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.account-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+.account-type {
+  font-size: 0.75rem;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.account-balance {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4caf50;
+  margin: 0.5rem 0;
+}
+
+.account-number {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.transactions-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.transactions-table thead {
+  background: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.transactions-table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  border-bottom: 2px solid #ddd;
+}
+
+.transactions-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.transactions-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.amount {
+  font-weight: 600;
+}
+
+.amount.debit {
+  color: #f44336;
+}
+
+.amount.credit {
+  color: #4caf50;
+}
+
+.status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status.posted,
+.status.completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status.pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status.unknown {
+  background: #f5f5f5;
+  color: #757575;
+}
+
+.status.booked {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.merchant-name {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+

@@ -1,0 +1,70 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.oauth-status {
+  font-size: 0.9rem;
+}
+
+.status-init {
+  color: #ffd700;
+}
+
+.status-par-requested {
+  color: #87ceeb;
+}
+
+.status-authorizing {
+  color: #ffa500;
+}
+
+.status-token-received {
+  color: #90ee90;
+}
+
+.status-authenticated {
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.left-pane {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #ddd;
+  background: white;
+  overflow: hidden;
+}
+
+.center-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f9f9f9;
+}
+

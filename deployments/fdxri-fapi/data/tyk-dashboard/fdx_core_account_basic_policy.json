@@ -42,6 +42,37 @@
       "disable_introspection": false,
       "allowance_scope": ""
     },
+    "7f36dab385094ba44a2a9e66299ebcaa": {
+      "api_name": "FDX V6.2.0 Customer API",
+      "api_id": "7f36dab385094ba44a2a9e66299ebcaa",
+      "versions": [
+        ""
+      ],
+      "allowed_urls": [],
+      "restricted_types": [],
+      "allowed_types": [],
+      "limit": {
+        "rate": 1000,
+        "per": 60,
+        "smoothing": {
+          "enabled": false,
+          "threshold": 500,
+          "trigger": 0.8,
+          "step": 100,
+          "delay": 30
+        },
+        "throttle_interval": -1,
+        "throttle_retry_limit": -1,
+        "max_query_depth": -1,
+        "quota_max": -1,
+        "quota_renews": 0,
+        "quota_remaining": 0,
+        "quota_renewal_rate": -1
+      },
+      "field_access_rights": [],
+      "disable_introspection": false,
+      "allowance_scope": ""
+    },
     "8ef8c11a38b042bf6d0ea1de532e9e70": {
       "api_name": "FDX V6.2.0 Core FAPI API",
       "api_id": "8ef8c11a38b042bf6d0ea1de532e9e70",

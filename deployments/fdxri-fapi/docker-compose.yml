@@ -20,7 +20,57 @@ services:
       - tyk-demo_tyk 
     ports:
       - 8090:8080
-
+  keycloak-db:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    networks:
+      - tyk
+    ports:
+      - 25432:5432
+    volumes:
+      - keycloak-data:/var/lib/postresql/data
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - keycloak
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+    deploy:
+      restart_policy:
+        condition: on-failure
+  keycloak:
+    image: keycloak/keycloak:24.0.1
+    depends_on:
+      - keycloak-db
+    networks:
+      - tyk
+    ports:
+      - 8180:8180
+    command:
+      - start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+      KC_HTTP_PORT: 8180
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_FEATURES: "token-exchange,admin-fine-grained-authz,dpop"
+volumes:
+  keycloak-data: null
 networks:
   tyk-demo_tyk:
     external: true

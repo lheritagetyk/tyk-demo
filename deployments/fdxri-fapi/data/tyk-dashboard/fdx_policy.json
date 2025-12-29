@@ -11,9 +11,9 @@
 	"throttle_retry_limit": -1,
 	"max_query_depth": -1,
 	"access_rights": {
-	  "8ef8c11a38b042bf6d0ea1de532e9e69": {
+	  "8ef8c11a38b042bf6d0ea1de532e9e70": {
 		"api_name": "FDX V6.2.0 Core API",
-		"api_id": "8ef8c11a38b042bf6d0ea1de532e9e69",
+		"api_id": "8ef8c11a38b042bf6d0ea1de532e9e70",
 		"versions": [
 		  ""
 		],

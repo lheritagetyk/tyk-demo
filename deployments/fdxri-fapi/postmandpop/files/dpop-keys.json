@@ -1,17 +1,17 @@
 {
   "publicJWK": {
     "kty": "EC",
-    "x": "DIOsi4dGIWHETgxfWa8plX1nsd_aTm_jcc1v_X0SPNY",
-    "y": "LCD9SU4csp9xz5_qqM99PwRrlNuttjqq86xFvKStBr0",
+    "x": "nqTJ77UIA8wlOpDo9KkXKoWYInEYcw4mTSamcn-QPCc",
+    "y": "1zYI-P0mZ0PcGiF6F95K6MvpJ7eG8Y2M07ZD0oAI2Ks",
     "crv": "P-256"
   },
   "privateJWK": {
     "kty": "EC",
-    "x": "DIOsi4dGIWHETgxfWa8plX1nsd_aTm_jcc1v_X0SPNY",
-    "y": "LCD9SU4csp9xz5_qqM99PwRrlNuttjqq86xFvKStBr0",
+    "x": "nqTJ77UIA8wlOpDo9KkXKoWYInEYcw4mTSamcn-QPCc",
+    "y": "1zYI-P0mZ0PcGiF6F95K6MvpJ7eG8Y2M07ZD0oAI2Ks",
     "crv": "P-256",
-    "d": "tLzGfJdUDagMItGOAfU9mJAKhkUAJIdspi_VcBR7qfk"
+    "d": "QgWT0bsFkq62jK0ZFc0x0zekbFFZOapyT__6wilqeuE"
   },
-  "thumbprint": "-ScGL9f6Qfoyv_UCHl6q55_FMNvLX5f-Iqq9pfnaBj0",
-  "created": "2025-10-31T19:58:40.276Z"
+  "thumbprint": "XobOsN8bsBSCRkHMxzztsctUV7Fwm2NEmuW2ie-74UM",
+  "created": "2025-12-11T23:03:15.547Z"
 }
