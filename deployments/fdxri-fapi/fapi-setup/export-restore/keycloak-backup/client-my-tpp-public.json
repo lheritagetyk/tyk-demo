@@ -1,5 +1,5 @@
 {
-  "id": "3e86a79e-daf8-4ce6-bcfe-f5d6731a9206",
+  "id": "25976d12-0d28-46e6-86f6-ac4da2e01d68",
   "clientId": "my-tpp-public",
   "name": "FAPI 2.0 Public Client",
   "description": "Client for testing FAPI 2.0 compliance with authorization code + PKCE flow",
@@ -53,16 +53,16 @@
   "defaultClientScopes": [
     "web-origins",
     "acr",
-    "roles",
     "profile",
+    "roles",
     "email"
   ],
   "optionalClientScopes": [
-    "payment-consent",
     "address",
+    "payment-consent",
     "phone",
-    "offline_access",
     "payments",
+    "offline_access",
     "microprofile-jwt"
   ],
   "access": {

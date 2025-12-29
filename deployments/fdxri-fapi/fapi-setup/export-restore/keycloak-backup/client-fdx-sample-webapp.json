@@ -1,21 +1,20 @@
 {
-  "id": "176b49e9-9eef-4154-9eca-5810281366b9",
-  "clientId": "fapi-conformance-one",
-  "name": "fapi-conformance-1",
-  "description": "Used for fapi conformance test",
+  "id": "abd7833a-a65b-449a-9761-be4fdd34112b",
+  "clientId": "fdx-sample-webapp",
+  "name": "fdx-sample-webapp",
+  "description": "",
   "rootUrl": "",
-  "adminUrl": "https://www.certification.openid.net",
+  "adminUrl": "",
   "baseUrl": "",
   "surrogateAuthRequired": false,
   "enabled": true,
   "alwaysDisplayInConsole": false,
   "clientAuthenticatorType": "",
   "redirectUris": [
-    "https://www.certification.openid.net/test/a/tyk/callback",
-    "https://www.certification.openid.net/test/a/tyk/callback?dummy1=lorem&dummy2=ipsum"
+    "http://localhost:3030/callback"
   ],
   "webOrigins": [
-    "https://www.certification.openid.net"
+    "http://localhost:3030"
   ],
   "notBefore": 0,
   "bearerOnly": false,
@@ -25,44 +24,36 @@
   "directAccessGrantsEnabled": false,
   "serviceAccountsEnabled": false,
   "publicClient": true,
-  "frontchannelLogout": true,
+  "frontchannelLogout": false,
   "protocol": "openid-connect",
   "attributes": {
-    "access.token.lifespan": "60",
+    "iaccess.token.signed.response.alg": "ES256",
+    "client.secret.creation.time": "1767037846",
+    "login_theme": "bank-theme",
+    "frontchannel.logout.session.required": "false",
     "oauth2.device.authorization.grant.enabled": "false",
-    "access.token.signed.response.alg": "ES256",
     "backchannel.logout.revoke.offline.tokens": "false",
-    "use.refresh.tokens": "true",
+    "use.refresh.tokens": "false",
     "oidc.ciba.grant.enabled": "false",
-    "client.use.lightweight.access.token.enabled": "false",
     "id.token.signed.response.alg": "ES256",
     "backchannel.logout.session.required": "true",
-    "client_credentials.use_refresh_token": "false",
-    "acr.loa.map": "{}",
+    "consent.screen.text": "This app will access your account data to provide personalized services.",
     "require.pushed.authorization.requests": "true",
-    "tls.client.certificate.bound.access.tokens": "false",
-    "display.on.consent.screen": "false",
+    "display.on.consent.screen": "true",
     "pkce.code.challenge.method": "S256",
-    "token.response.type.bearer.lower-case": "false",
     "dpop.bound.access.tokens": "true"
   },
   "authenticationFlowBindingOverrides": {},
   "fullScopeAllowed": true,
   "nodeReRegistrationTimeout": -1,
   "defaultClientScopes": [
-    "web-origins",
-    "acr",
-    "profile",
-    "roles",
-    "email"
+    "fdx:account.detail:read",
+    "openid",
+    "fdx:transaction:read",
+    "fdx:payment:write"
   ],
   "optionalClientScopes": [
-    "address",
-    "payment-consent",
-    "phone",
-    "payments",
-    "offline_access",
-    "microprofile-jwt"
+    "fdx:account.basic:read"
   ],
   "access": {
     "view": true,

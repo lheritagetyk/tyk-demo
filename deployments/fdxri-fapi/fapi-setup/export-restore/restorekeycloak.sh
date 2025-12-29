@@ -109,6 +109,45 @@ curl -s -X POST "$KEYCLOAK_URL/admin/realms/$REALM/client-scopes" \
 
 echo "✅ Client scopes created"
 
+# Create FDX scopes from fdxscopes.json
+echo "📥 Creating FDX scopes from fdxscopes.json..."
+# Path relative to where script is called from (tyk-demo root)
+SCOPES_FILE="./deployments/fdxri-fapi/fdxscopes.json"
+if [ -f "$SCOPES_FILE" ]; then
+  # Use jq to iterate through each scope in the JSON array
+  jq -c '.[]' "$SCOPES_FILE" | while read -r scope; do
+    scope_name=$(echo "$scope" | jq -r '.name')
+    
+    # Check if scope already exists
+    EXISTING_SCOPE=$(curl -s -o /dev/null -w "%{http_code}" \
+      "$KEYCLOAK_URL/admin/realms/$REALM/client-scopes/$scope_name" \
+      -H "Authorization: Bearer $ADMIN_TOKEN")
+    
+    if [ "$EXISTING_SCOPE" = "200" ]; then
+      echo "  ⚠️  Scope '$scope_name' already exists, skipping..."
+      continue
+    fi
+    
+    # Create the scope
+    echo "  Creating scope: $scope_name"
+    RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$KEYCLOAK_URL/admin/realms/$REALM/client-scopes" \
+      -H "Authorization: Bearer $ADMIN_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$scope")
+    
+    HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+    
+    if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "409" ]; then
+      echo "  ✅ Scope '$scope_name' created"
+    else
+      echo "  ❌ Failed to create scope '$scope_name' (HTTP $HTTP_CODE)"
+    fi
+  done
+  echo "✅ FDX scopes created"
+else
+  echo "⚠️  Warning: $SCOPES_FILE not found, skipping FDX scope creation"
+fi
+
 # Import client profiles
 echo "📥 Importing client profiles..."
 curl -s -X PUT "$KEYCLOAK_URL/admin/realms/$REALM/client-policies/profiles" \
@@ -194,7 +233,7 @@ echo "🔍 Verifying restoration..."
 
 # Verify clients
 CLIENTS_FOUND=0
-for CLIENT in "my-tpp" "my-tpp-public" "fapi-conformance-one"; do
+for CLIENT in "my-tpp" "my-tpp-public" "fapi-conformance-one" "fdx-sample-webapp" "fapi-postman"; do
   CLIENT_EXISTS=$(curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
     -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r ".[] | select(.clientId==\"$CLIENT\") | .clientId")
   
@@ -233,3 +272,5 @@ echo "📱 Clients:"
 echo "   - my-tpp (confidential)"
 echo "   - my-tpp-public (public)"
 echo "   - fapi-conformance-one (public)"
+echo "   - fdx-sample-webapp (public)"
+echo "   - fapi-postman (public)"

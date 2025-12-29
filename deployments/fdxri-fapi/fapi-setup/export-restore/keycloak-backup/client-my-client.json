@@ -1,5 +1,5 @@
 {
-  "id": "b202beee-0efa-49d3-bc2a-edb958631a8d",
+  "id": "c959a71c-c4ef-440f-851b-2f2f562fa4dc",
   "clientId": "my-client",
   "name": "my-test",
   "description": "Test Client for FAPI",
@@ -44,9 +44,9 @@
     "backchannel.logout.session.required": "true",
     "client_credentials.use_refresh_token": "false",
     "jwks.url": "http://host.docker.internal:8082/.well-known/jwks.json",
-    "tls.client.certificate.bound.access.tokens": "false",
-    "require.pushed.authorization.requests": "true",
     "acr.loa.map": "{}",
+    "require.pushed.authorization.requests": "true",
+    "tls.client.certificate.bound.access.tokens": "false",
     "display.on.consent.screen": "false",
     "pkce.code.challenge.method": "S256",
     "token.response.type.bearer.lower-case": "false",
@@ -125,16 +125,16 @@
   "defaultClientScopes": [
     "web-origins",
     "acr",
-    "roles",
     "profile",
+    "roles",
     "email"
   ],
   "optionalClientScopes": [
-    "payment-consent",
     "address",
+    "payment-consent",
     "phone",
-    "offline_access",
     "payments",
+    "offline_access",
     "microprofile-jwt"
   ],
   "access": {

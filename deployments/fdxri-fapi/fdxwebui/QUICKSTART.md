@@ -48,13 +48,13 @@ Edit `.env` with your configuration:
 ```env
 VITE_KEYCLOAK_URL=http://localhost:8180
 VITE_KEYCLOAK_REALM=fapi-demo
-VITE_CLIENT_ID=329df529-6f6e-4759-a996-df52882c1fb8
-VITE_REDIRECT_URI=http://localhost:3002/callback
+VITE_CLIENT_ID=fdx-sample-webapp
+VITE_REDIRECT_URI=http://localhost:3030/callback
 
 VITE_DPOP_SERVICE_URL=http://localhost:3010
 
-VITE_FDX_CORE_API_URL=http://tyk-gateway.localhost:8080/account-information/
-VITE_FDX_CUSTOMER_API_URL=http://tyk-gateway.localhost:8080/fdxri/
+VITE_FDX_CORE_API_URL=http://tyk-gateway.localhost:8080/fdxfapi
+VITE_FDX_CUSTOMER_API_URL=http://tyk-gateway.localhost:8080/fdxapi
 ```
 
 ## Step 4: Start DPoP Signing Service

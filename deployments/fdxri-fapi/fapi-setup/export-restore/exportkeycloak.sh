@@ -40,6 +40,36 @@ echo "✅ Realm exported: $BACKUP_DIR/realm-$REALM.json"
 # Export specific clients
 echo "📦 Exporting clients..."
 
+# Get fdx-sample-webapp
+
+FDX_SAMPLE_WEBAPP=$(curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[] | select(.clientId=="fdx-sample-webapp") | .id')
+
+if [ -n "$FDX_SAMPLE_WEBAPP" ] && [ "$FDX_SAMPLE_WEBAPP" != "null" ]; then
+  curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients/$FDX_SAMPLE_WEBAPP" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    | jq '.' > "$BACKUP_DIR/client-fdx-sample-webapp.json"
+  echo "✅ Client exported: fdx-sample-webapp"
+else
+  echo "⚠️  Client not found: fdx-sample-webapp"
+fi
+
+
+# Get fapi-postman
+
+FAPI_POSTMAN=$(curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[] | select(.clientId=="fapi-postman") | .id')
+
+if [ -n "$FAPI_POSTMAN" ] && [ "$FAPI_POSTMAN" != "null" ]; then
+  curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients/$FAPI_POSTMAN" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    | jq '.' > "$BACKUP_DIR/client-fapi-postman.json"
+  echo "✅ Client exported: fapi-postman"
+else
+  echo "⚠️  Client not found: fapi-postman"
+fi
+
+
 # Get my-client
 MY_CLIENT_ID=$(curl -s "$KEYCLOAK_URL/admin/realms/$REALM/clients" \
   -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[] | select(.clientId=="my-client") | .id')
@@ -125,6 +155,8 @@ cat > "$BACKUP_DIR/backup-metadata.json" << EOF
   "realm": "$REALM",
   "files": [
     "realm-$REALM.json",
+    "client-fdx-sample-webapp.json",
+    "client-fapi-postman.json",
     "client-my-tpp.json",
     "client-my-tpp-public.json",
     "client-fapi-conformance-one.json",

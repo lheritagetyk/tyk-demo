@@ -1,5 +1,5 @@
 {
-  "id": "4e73a18e-e43d-4e3b-b4bc-012629d55a0c",
+  "id": "53130cb6-2cbb-4cb9-98e5-cc7c7b4ef02f",
   "clientId": "my-tpp",
   "name": "FAPI 2.0 Confidential Client",
   "description": "Client for testing FAPI 2.0 compliance with client credentials flow",
@@ -105,16 +105,16 @@
   "defaultClientScopes": [
     "web-origins",
     "acr",
-    "roles",
     "profile",
+    "roles",
     "email"
   ],
   "optionalClientScopes": [
-    "payment-consent",
     "address",
+    "payment-consent",
     "phone",
-    "offline_access",
     "payments",
+    "offline_access",
     "microprofile-jwt"
   ],
   "access": {

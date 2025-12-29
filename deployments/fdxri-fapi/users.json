@@ -6,6 +6,8 @@
       "enabled": true,
       "email": "alice@example.com",
       "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Wonderland",
       "credentials": [
         { "type": "password", "value": "password123!", "temporary": false }
       ]
@@ -14,6 +16,8 @@
       "username": "bob",
       "enabled": true,
       "email": "bob@example.com",
+      "firstName": "Bob",
+      "lastName": "TheBuilder",
       "credentials": [
         { "type": "password", "value": "password123!", "temporary": true }
       ]
