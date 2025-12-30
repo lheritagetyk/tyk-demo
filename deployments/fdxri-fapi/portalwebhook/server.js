@@ -4,6 +4,10 @@
 
 import express from "express";
 import crypto from "crypto";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 // ----------------------
 // Config (via env vars)
@@ -13,20 +17,43 @@ const {
 
   
   // Tyk Portal Admin API 
-  TYK_PORTAL_BASE_URL="http://tyk-portal.localhost:3100",            // e.g. http://tyk-portal.localhost:3100
-  TYK_PORTAL_ADMIN_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm92aWRlciI6Im5vbmUiLCJVc2VySUQiOiIkMmEkMTAkZjFDRjVNRVVVaERPaHQ1NS5TaDl1dTFaZXRucTkxU21mem4wcFo4VFNpVHF5TDFqSUxIRmkifQ.wvqJCegh2oErghNuvuRk5pyv_w4hG-IDc5CC92ZmUvU",
+  TYK_PORTAL_BASE_URL,
+  TYK_PORTAL_ADMIN_API_KEY,
   // Keycloak
-  KC_BASE_URL="http://keycloak:8180",                    // e.g. http://keycloak:8180
-  KC_REALM ="fapi-demo",                       // e.g. myrealm
-  KC_ADMIN_USERNAME = "admin",              // 
-  KC_ADMIN_PASSWORD = "admin",              // 
-  KC_ADMIN_REALM = "master",      // typically "master"
-  KC_ADMIN_CLIENT_ID = "admin-cli",
+  KC_BASE_URL,
+  KC_REALM,
+  KC_ADMIN_USERNAME,
+  KC_ADMIN_PASSWORD,
+  KC_ADMIN_REALM,
+  KC_ADMIN_CLIENT_ID,
 
   // Defaults applied if webhook doesn't send them
   DEFAULT_CONSENT_TEXT = "This app will access your account data to provide personalized services.",
   DEFAULT_LOGIN_THEME = "bank-theme",
 } = process.env;
+
+// Validate required environment variables
+const requiredEnvVars = {
+  TYK_PORTAL_BASE_URL,
+  TYK_PORTAL_ADMIN_API_KEY,
+  KC_BASE_URL,
+  KC_REALM,
+  KC_ADMIN_USERNAME,
+  KC_ADMIN_PASSWORD,
+  KC_ADMIN_REALM,
+  KC_ADMIN_CLIENT_ID,
+};
+
+const missingVars = Object.entries(requiredEnvVars)
+  .filter(([_, value]) => !value)
+  .map(([key]) => key);
+
+if (missingVars.length > 0) {
+  console.error("❌ Missing required environment variables:");
+  missingVars.forEach(varName => console.error(`   - ${varName}`));
+  console.error("\nPlease ensure all required variables are set in your .env file.");
+  process.exit(1);
+}
 
 
 const app = express();

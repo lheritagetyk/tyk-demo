@@ -51,9 +51,12 @@ This deployment implements:
 ## 🚀 Prerequisites
 
 - Docker and Docker Compose
-- Node.js 18+ (for portal webhook)
 - Access to FDX Docker registry (credentials in `key/fdx_ri_copy.json`)
 - Tyk Demo deployment with Portal and Keycloak DCR services
+- Required hostnames in `/etc/hosts`:
+  - `tyk-gateway.localhost` → `127.0.0.1`
+  - `tyk-portal.localhost` → `127.0.0.1`
+  - `tyk-dashboard.localhost` → `127.0.0.1`
 
 ## 📦 Components
 
@@ -81,11 +84,26 @@ This deployment implements:
    - Product catalog management
    - Exposed on port `3100`
 
-5. **Portal Webhook Service**
-   - Node.js Express service
+5. **Portal Webhook Service** (Containerized)
+   - Node.js Express service in Docker container
    - Listens for Tyk Portal webhook events
    - Automatically configures Keycloak clients with scopes and consent settings
+   - Configuration via `.env` file (auto-updated by bootstrap.sh)
    - Runs on port `8899`
+   - Health check endpoint: `/healthz`
+
+6. **Tyk gRPC Plugin** (Containerized)
+   - Go-based gRPC plugin for Tyk Gateway
+   - Implements DPoP validation and FAPI 2.0 compliance
+   - Runs on port `5555`
+   - Communicates with Tyk Gateway via gRPC
+
+7. **FDX Web UI** (Containerized)
+   - React-based web application for testing FDX APIs
+   - DPoP signing service (port `3010`)
+   - Vite development server (port `3030`)
+   - Hot-reload enabled for development
+   - OAuth 2.0 flow with DPoP support
 
 ## 🔧 Setup Instructions
 
@@ -94,35 +112,67 @@ This deployment implements:
 First, bring up the required Tyk services:
 
 ```bash
-./up.sh portal keycloak-dcr
+./up.sh portal fdxri-fapi
 ```
 
-### 2. Configure Portal Webhook
+This will start:
+- Tyk Gateway
+- Tyk Dashboard
+- Tyk Portal
+- Keycloak (with DCR support)
+- FDX RI services (PostgreSQL, Tomcat)
+- Containerized services (tyk-grpc-plugin, portalwebhook, fdxwebui)
 
-1. **Get Portal Admin API Key**
-   - Login to Tyk Portal as Admin
-   - Navigate to Settings → API Keys
-   - Copy the Portal Admin API Key
+### 2. Configuration Files
 
-2. **Update Webhook Configuration**
-   
-   Edit `portalwebhook/server.js` and update the `TYK_PORTAL_ADMIN_API_KEY`:
-   
-   ```javascript
-   TYK_PORTAL_ADMIN_API_KEY="your-portal-admin-api-key-here"
-   ```
-   
-   **Note:** This key changes every time you restart the Tyk Portal service.
+#### Portal Webhook `.env` File
 
-3. **Install Dependencies and Start Webhook**
-   
-   ```bash
-   cd portalwebhook
-   npm install
-   node server.js
-   ```
-   
-   The webhook will listen on `http://localhost:8899/webhooks/tyk`
+The portalwebhook service uses a `.env` file for configuration. The bootstrap script automatically:
+- Creates the `.env` file if it doesn't exist
+- Updates `TYK_PORTAL_ADMIN_API_KEY` with the token retrieved from Tyk Portal
+
+**Location**: `deployments/fdxri-fapi/portalwebhook/.env`
+
+**Required Variables**:
+```env
+# Tyk Portal Admin API Configuration
+TYK_PORTAL_BASE_URL=http://tyk-portal.localhost:3100
+TYK_PORTAL_ADMIN_API_KEY=<auto-populated by bootstrap.sh>
+
+# Keycloak Configuration
+KC_BASE_URL=http://keycloak:8180
+KC_REALM=fapi-demo
+KC_ADMIN_USERNAME=admin
+KC_ADMIN_PASSWORD=admin
+KC_ADMIN_REALM=master
+KC_ADMIN_CLIENT_ID=admin-cli
+
+# Defaults applied if webhook doesn't send them
+DEFAULT_CONSENT_TEXT=This app will access your account data to provide personalized services.
+DEFAULT_LOGIN_THEME=bank-theme
+
+# Server Port
+PORT=8899
+```
+
+**Note**: The `TYK_PORTAL_ADMIN_API_KEY` is automatically updated by `bootstrap.sh` - you don't need to manually configure it.
+
+#### FDX Web UI Environment Variables
+
+The fdxwebui container uses environment variables set in `docker-compose.yml`:
+
+```yaml
+environment:
+  - VITE_KEYCLOAK_URL=http://keycloak:8180
+  - VITE_KEYCLOAK_REALM=fapi-demo
+  - VITE_CLIENT_ID=fdx-sample-webapp
+  - VITE_REDIRECT_URI=http://localhost:3030/callback
+  - VITE_DPOP_SERVICE_URL=http://localhost:3010
+  - VITE_FDX_CORE_API_URL=http://tyk-gateway.localhost:8080/fdxfapi
+  - VITE_FDX_CUSTOMER_API_URL=http://tyk-gateway.localhost:8080/fdxapi
+```
+
+You can override these by setting environment variables in the main `.env` file or docker-compose.yml.
 
 ### 3. Run Bootstrap Script
 
@@ -154,8 +204,12 @@ This script will:
 - ✅ Link client types to products
 - ✅ Import users into Keycloak
 - ✅ Import FDX scopes into Keycloak
+- ✅ **Update portalwebhook `.env` file** with Portal Admin API token
+- ✅ **Start tyk-grpc-plugin container** (gRPC service on port 5555)
+- ✅ **Start portalwebhook container** (webhook service on port 8899)
+- ✅ **Start fdxwebui container** (DPoP service on port 3010, UI on port 3030)
 
-**Note:** The bootstrap script automatically sets up the Keycloak `fapi-demo` realm with all FAPI 2.0 configurations, so no manual Keycloak setup is required.
+**Note:** The bootstrap script automatically sets up the Keycloak `fapi-demo` realm with all FAPI 2.0 configurations, so no manual Keycloak setup is required. All services are containerized and started automatically.
 
 ## 📁 Directory Structure
 
@@ -172,13 +226,25 @@ fdxri-fapi/
 ├── fapi-setup/
 │   ├── export-restore/           # Keycloak realm backup/restore
 │   └── ukaccounts/               # UK Open Banking API specs
-├── portalwebhook/                # Portal webhook service
-│   └── server.js                 # Webhook server
+├── portalwebhook/                # Portal webhook service (containerized)
+│   ├── server.js                 # Webhook server
+│   ├── Dockerfile                # Container definition
+│   ├── .env                      # Configuration (auto-updated by bootstrap)
+│   └── README.md                 # Webhook documentation
+├── tyk-grpc-plugin/              # Tyk gRPC plugin (containerized)
+│   ├── main.go                   # Plugin source code
+│   ├── Dockerfile                # Container definition
+│   └── proto/                    # Protocol buffer definitions
+├── fdxwebui/                     # FDX Web UI (containerized)
+│   ├── src/                      # React application source
+│   ├── Dockerfile                # Container definition
+│   ├── dpop-signing-service.js  # DPoP signing service
+│   └── vite.config.js           # Vite configuration
 ├── postmandpop/                   # DPoP testing tools
 │   └── files/                    # Postman collection & DPoP helpers
 ├── fdxscopes.json                # FDX scope definitions
 ├── users.json                    # Keycloak user seed data
-└── docker-compose.yml            # FDX RI service definitions
+└── docker-compose.yml            # All service definitions (FDX RI, Keycloak, containers)
 ```
 
 ## 🔐 Key Features
@@ -243,13 +309,24 @@ The `postmandpop/` directory contains tools for testing FAPI 2.0 flows:
 
 See `postmandpop/files/README.md` for detailed instructions.
 
-### API Endpoints
+### Service Endpoints and Ports
 
-- **FDX Core API**: `http://localhost:8090/fdxapi`
-- **Tyk Gateway (FDX FAPI)**: `http://tyk-gateway.localhost:8080/fdxfapi`
-- **Tyk Portal**: `http://tyk-portal.localhost:3100`
-- **Keycloak**: `http://keycloak:8180` (internal) or `http://localhost:8180` (if exposed)
-- **Portal Webhook**: `http://localhost:8899/webhooks/tyk`
+| Service | URL | Port | Description |
+|---------|-----|------|-------------|
+| **FDX RI (Tomcat)** | `http://localhost:8090/fdxapi` | 8090 | FDX Reference Implementation API |
+| **Tyk Gateway (FDX FAPI)** | `http://tyk-gateway.localhost:8080/fdxfapi` | 8080 | Tyk Gateway with FAPI policies |
+| **Tyk Gateway (FDX Customer)** | `http://tyk-gateway.localhost:8080/fdxapi` | 8080 | Tyk Gateway for customer APIs |
+| **Tyk Portal** | `http://tyk-portal.localhost:3100` | 3100 | Developer Portal |
+| **Tyk Dashboard** | `http://tyk-dashboard.localhost:3000` | 3000 | API Management Dashboard |
+| **Keycloak** | `http://localhost:8180` | 8180 | OAuth2/OIDC Authorization Server |
+| **Keycloak (internal)** | `http://keycloak:8180` | 8180 | Internal Docker network address |
+| **Portal Webhook** | `http://localhost:8899/webhooks/tyk` | 8899 | Webhook endpoint for Portal events |
+| **Portal Webhook Health** | `http://localhost:8899/healthz` | 8899 | Health check endpoint |
+| **Tyk gRPC Plugin** | `tcp://localhost:5555` | 5555 | gRPC service for Tyk Gateway |
+| **FDX Web UI** | `http://localhost:3030` | 3030 | React web application |
+| **DPoP Signing Service** | `http://localhost:3010` | 3010 | DPoP proof generation service |
+| **PostgreSQL (FDX RI)** | `localhost:7432` | 7432 | FDX RI database |
+| **PostgreSQL (Keycloak)** | `localhost:25432` | 25432 | Keycloak database |
 
 ## 🔍 Troubleshooting
 
@@ -272,20 +349,54 @@ See `postmandpop/files/README.md` for detailed instructions.
 
 ### Webhook Not Working
 
-1. **Verify webhook is running**
+1. **Verify webhook container is running**
    ```bash
+   docker ps | grep portalwebhook
    curl http://localhost:8899/healthz
    ```
 
-2. **Check webhook logs** for errors
+2. **Check webhook container logs**
+   ```bash
+   docker logs portalwebhook-fapi
+   ```
 
-3. **Verify Portal Admin API Key** is correct and current
+3. **Verify Portal Admin API Key** in `.env` file
+   ```bash
+   cat deployments/fdxri-fapi/portalwebhook/.env | grep TYK_PORTAL_ADMIN_API_KEY
+   ```
+   The bootstrap script should have automatically updated this.
 
-4. **Test webhook manually**
+4. **Verify .env file is mounted correctly**
+   ```bash
+   docker exec portalwebhook-fapi cat /app/.env
+   ```
+
+5. **Test webhook manually**
    ```bash
    curl -X POST http://localhost:8899/webhooks/tyk \
      -H "Content-Type: application/json" \
      -d '{"Message":{"AppID":"test-app-id"}}'
+   ```
+
+### Container Issues
+
+1. **Check all containers are running**
+   ```bash
+   docker ps | grep -E "fdxri-fapi|portalwebhook|tyk-grpc|fdxwebui"
+   ```
+
+2. **View container logs**
+   ```bash
+   docker logs portalwebhook-fapi
+   docker logs tyk-grpc-plugin-fapi
+   docker logs fdxwebui
+   ```
+
+3. **Rebuild containers if needed**
+   ```bash
+   cd deployments/fdxri-fapi
+   docker compose build portalwebhook tyk-grpc-plugin fdxwebui
+   docker compose up -d portalwebhook tyk-grpc-plugin fdxwebui
    ```
 
 ### Keycloak Client Scopes Not Appearing
@@ -320,8 +431,21 @@ The webhook uses Keycloak's dedicated API endpoints to add scopes. If scopes are
 
 ### Updating Portal Admin API Key
 
-The Portal Admin API Key changes when Tyk Portal restarts. Update it in:
-- `portalwebhook/server.js` - `TYK_PORTAL_ADMIN_API_KEY`
+The Portal Admin API Key changes when Tyk Portal restarts. The bootstrap script automatically updates it in:
+- `portalwebhook/.env` - `TYK_PORTAL_ADMIN_API_KEY` (auto-updated by bootstrap.sh)
+
+If you need to manually update it:
+```bash
+# Edit the .env file
+nano deployments/fdxri-fapi/portalwebhook/.env
+
+# Or update via sed (replace YOUR_KEY_HERE with actual key)
+sed -i '' 's|TYK_PORTAL_ADMIN_API_KEY=.*|TYK_PORTAL_ADMIN_API_KEY=YOUR_KEY_HERE|' \
+  deployments/fdxri-fapi/portalwebhook/.env
+
+# Restart the container to pick up changes
+docker restart portalwebhook-fapi
+```
 
 ### Adding New Scopes
 
@@ -340,8 +464,29 @@ cd fapi-setup/export-restore
 
 - The FDX RI Docker images require authentication to the FDX registry
 - Credentials are stored in `key/fdx_ri_copy.json`
-- The webhook service must be running for automatic client configuration
-- All services must be on the same Docker network (`tyk-demo_tyk`)
+- All services are containerized and managed via Docker Compose
+- The webhook service automatically starts with the deployment
+- All services must be on the same Docker network (`tyk` or `tyk-demo_tyk`)
+- The portalwebhook `.env` file is automatically created/updated by bootstrap.sh
+- fdxwebui supports hot-reload for development (source code is mounted as volumes)
+- tyk-grpc-plugin and portalwebhook are built from source during deployment
+
+## 🐳 Docker Services
+
+The deployment includes the following containerized services:
+
+### Core Services
+- **postgres** - FDX RI database (port 7432)
+- **tomcat** - FDX Reference Implementation (port 8090)
+- **keycloak-db** - Keycloak database (port 25432)
+- **keycloak** - OAuth2/OIDC server (port 8180)
+
+### Containerized Services
+- **tyk-grpc-plugin** - gRPC plugin for Tyk Gateway (port 5555)
+- **portalwebhook** - Portal webhook service (port 8899)
+- **fdxwebui** - Web UI and DPoP service (ports 3010, 3030)
+
+All services are defined in `docker-compose.yml` and started automatically by the bootstrap script.
 
 ## 🤝 Support
 

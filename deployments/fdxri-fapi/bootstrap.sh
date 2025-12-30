@@ -9,6 +9,7 @@ dashboard_user_api_key=$(get_context_data "1" "dashboard-user" "1" "api-key")
 gateway_base_url="http://tyk-gateway.localhost:8080"
 gateway_api_credentials=$(cat deployments/tyk/volumes/tyk-gateway/tyk.conf | jq -r .secret)
 keycloak_base_url="http://keycloak:8180"
+portal_admin_api_token=$(get_context_data "1" "enterprise-portal-admin" "1" "api-key")
 
 
 log_start_deployment
@@ -120,9 +121,67 @@ portal_base_url="http://tyk-portal.localhost:3100"
 log_message "Waiting for Enterprise Portal to be ready"
 wait_for_response "$portal_base_url/ready" "200" "" "10"
 if [ $? -eq 0 ]; then
-    # Get Portal Admin API token
-    portal_admin_api_token=$(get_context_data "1" "enterprise-portal-admin" "1" "api-key")
+    # Portal Admin API token is already retrieved at the top of the script
    if [ -n "$portal_admin_api_token" ]; then
+        # Update portalwebhook .env file with the portal admin API token
+        log_message "Updating portalwebhook .env file with Portal Admin API token"
+        PORTALWEBHOOK_ENV="deployments/fdxri-fapi/portalwebhook/.env"
+        PORTALWEBHOOK_DIR="deployments/fdxri-fapi/portalwebhook"
+        
+        # Create .env file if it doesn't exist with default values
+        if [ ! -f "$PORTALWEBHOOK_ENV" ]; then
+            log_message "  Creating portalwebhook/.env file with default values"
+            mkdir -p "$PORTALWEBHOOK_DIR"
+            cat > "$PORTALWEBHOOK_ENV" << EOF
+# Tyk Portal Admin API Configuration
+# Use Docker service name when running in container, hostname when running locally
+TYK_PORTAL_BASE_URL=http://tyk-portal:3001
+TYK_PORTAL_ADMIN_API_KEY=$portal_admin_api_token
+
+# Keycloak Configuration
+KC_BASE_URL=http://keycloak:8180
+KC_REALM=fapi-demo
+KC_ADMIN_USERNAME=admin
+KC_ADMIN_PASSWORD=admin
+KC_ADMIN_REALM=master
+KC_ADMIN_CLIENT_ID=admin-cli
+
+# Defaults applied if webhook doesn't send them
+DEFAULT_CONSENT_TEXT=This app will access your account data to provide personalized services.
+DEFAULT_LOGIN_THEME=bank-theme
+
+# Server Port
+PORT=8899
+EOF
+            log_message "  ✓ Created portalwebhook/.env file"
+        else
+            # Update TYK_PORTAL_BASE_URL to use Docker service name (for containerized environment)
+            if grep -q "^TYK_PORTAL_BASE_URL=" "$PORTALWEBHOOK_ENV"; then
+                # Update existing value (works on both macOS and Linux)
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '' "s|^TYK_PORTAL_BASE_URL=.*|TYK_PORTAL_BASE_URL=http://tyk-portal:3001|" "$PORTALWEBHOOK_ENV"
+                else
+                    sed -i "s|^TYK_PORTAL_BASE_URL=.*|TYK_PORTAL_BASE_URL=http://tyk-portal:3001|" "$PORTALWEBHOOK_ENV"
+                fi
+            else
+                # Add new line if it doesn't exist
+                echo "TYK_PORTAL_BASE_URL=http://tyk-portal:3001" >> "$PORTALWEBHOOK_ENV"
+            fi
+            # Update existing TYK_PORTAL_ADMIN_API_KEY or add it if it doesn't exist
+            if grep -q "^TYK_PORTAL_ADMIN_API_KEY=" "$PORTALWEBHOOK_ENV"; then
+                # Update existing value (works on both macOS and Linux)
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '' "s|^TYK_PORTAL_ADMIN_API_KEY=.*|TYK_PORTAL_ADMIN_API_KEY=$portal_admin_api_token|" "$PORTALWEBHOOK_ENV"
+                else
+                    sed -i "s|^TYK_PORTAL_ADMIN_API_KEY=.*|TYK_PORTAL_ADMIN_API_KEY=$portal_admin_api_token|" "$PORTALWEBHOOK_ENV"
+                fi
+            else
+                # Add new line if it doesn't exist
+                echo "TYK_PORTAL_ADMIN_API_KEY=$portal_admin_api_token" >> "$PORTALWEBHOOK_ENV"
+            fi
+            log_message "  ✓ Updated TYK_PORTAL_ADMIN_API_KEY in portalwebhook/.env"
+        fi
+        bootstrap_progress
     
         log_message "SUCCESS: We have a portal"
 
@@ -465,6 +524,32 @@ else
 fi
 bootstrap_progress
 
+# Start portalwebhook service
+log_message "Starting portalwebhook service"
+if [ -f "./deployments/fdxri-fapi/portalwebhook/Dockerfile" ]; then
+    $(generate_docker_compose_command) up -d --build portalwebhook 1>/dev/null 2>>logs/bootstrap.log
+    if [ $? -eq 0 ]; then
+        log_message "  Waiting for portalwebhook to be ready..."
+        # Wait for webhook service to be ready (check if port is listening)
+        for i in {1..30}; do
+            if curl -s http://localhost:8899/healthz > /dev/null 2>&1; then
+                log_message "  ✓ Portal webhook is ready on port 8899"
+                break
+            fi
+            if [ $i -eq 30 ]; then
+                log_message "  ⚠️  Portal webhook did not become ready in time"
+            fi
+            sleep 1
+        done
+        log_ok
+    else
+        log_message "ERROR: Failed to start portalwebhook service"
+    fi
+else
+    log_message "WARNING: portalwebhook Dockerfile not found, skipping portalwebhook startup"
+fi
+bootstrap_progress
+
 # Start fdxwebui service (DPoP signing service + Vite dev server)
 log_message "Starting fdxwebui service (DPoP signing service + Vite dev server)"
 if [ -f "./deployments/fdxri-fapi/fdxwebui/Dockerfile" ]; then
@@ -510,6 +595,9 @@ echo -e "\033[2K
           URL : http://localhost:8090/fdxapi/accounts
   ▽ Tyk gRPC Plugin
           gRPC Port : http://localhost:5555
+  ▽ Portal Webhook
+          Webhook : http://localhost:8899/webhooks/tyk
+          Health : http://localhost:8899/healthz
   ▽ FDX Web UI
           Web UI : http://localhost:3030
           DPoP Service : http://localhost:3010"
